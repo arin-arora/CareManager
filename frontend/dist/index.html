@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩺</text></svg>" />
+    <title>CareManager</title>
+    <script>
+      (function() {
+        const theme = localStorage.getItem('theme') || 'system';
+        const root = document.documentElement;
+        if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          root.classList.add('dark');
+        } else {
+          root.classList.remove('dark');
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-DtGNCAJT.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DM1tNX7q.css">
+  </head>
+  <body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-50 antialiased selection:bg-blue-500/20">
+    <div id="root"></div>
+  </body>
+</html>

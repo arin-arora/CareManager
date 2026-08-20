@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { apiService } from '../services/api';
-import { Calendar, Clock, User, Activity, AlertCircle, CheckCircle, Search, ArrowLeft } from 'lucide-react';
+import { 
+  Calendar, Clock, User, Activity, AlertCircle, CheckCircle, 
+  Search, ArrowLeft, Heart, Sparkles, Check
+} from 'lucide-react';
+import { Button, Card, Input, Textarea, Badge } from '../components/UI';
 
 export default function BookingPage({ token, user }) {
   const [doctors, setDoctors] = useState([]);
@@ -19,9 +22,7 @@ export default function BookingPage({ token, user }) {
   const loadDoctors = async () => {
     try {
       setLoading(true);
-      // We need to fetch from our doctor endpoint
-      // We can use a direct axios call if apiService doesn't have it, or implement it
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/doctors?specialisation=${specialisation}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5051'}/api/doctors?specialisation=${specialisation}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -42,7 +43,7 @@ export default function BookingPage({ token, user }) {
     if (!selectedDoctor) return;
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/doctors/${selectedDoctor.id}/slots?date=${selectedDate}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5051'}/api/doctors/${selectedDoctor.id}/slots?date=${selectedDate}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -79,7 +80,7 @@ export default function BookingPage({ token, user }) {
     try {
       setLoading(true);
       setBookingStatus(null);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments/hold`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5051'}/api/appointments/hold`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +116,7 @@ export default function BookingPage({ token, user }) {
 
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5051'}/api/appointments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -152,10 +153,32 @@ export default function BookingPage({ token, user }) {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  // Generate dynamic list of next 7 days for calendar selector
+  const getNext7Days = () => {
+    const days = [];
+    const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayName = daysOfWeek[d.getDay()];
+      const dayNum = d.getDate();
+      days.push({ dateStr, dayName, dayNum });
+    }
+    return days;
+  };
+
+  const next7Days = getNext7Days();
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+    <div className="max-w-5xl mx-auto space-y-6 pb-12 font-sans">
+      
+      {/* Directory Title Header */}
       <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-        <h1 className="text-2xl font-bold tracking-tight">Book an Appointment</h1>
+        <div>
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">Book an Appointment</h1>
+          <p className="text-xs text-slate-500 font-semibold mt-0.5">Select a practitioner, schedule slots, and describe symptoms.</p>
+        </div>
         {selectedDoctor && (
           <button
             onClick={() => {
@@ -164,7 +187,7 @@ export default function BookingPage({ token, user }) {
               setHoldTimer(0);
               setBookingStatus(null);
             }}
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
+            className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-900 cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Search
           </button>
@@ -172,120 +195,134 @@ export default function BookingPage({ token, user }) {
       </div>
 
       {bookingStatus === 'success' ? (
-        <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-250 dark:border-emerald-900 rounded-2xl p-6 text-center space-y-4">
+        /* Success Screen */
+        <div className="bg-emerald-50 text-slate-850 border border-emerald-100 rounded-xl p-8 text-center space-y-4 max-w-xl mx-auto dark:bg-emerald-950/20 dark:border-emerald-900">
           <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto" />
-          <h2 className="text-lg font-bold text-slate-800 dark:text-emerald-400">Appointment Booked!</h2>
-          <p className="text-sm font-semibold text-slate-600 dark:text-slate-350">{statusMessage}</p>
-          <button
-            onClick={() => {
-              setBookingStatus(null);
-              setSelectedDoctor(null);
-              setSymptoms('');
-            }}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer"
-          >
-            Book Another Appointment
-          </button>
+          <h2 className="text-lg font-extrabold dark:text-emerald-400">Appointment Booked!</h2>
+          <p className="text-xs font-semibold text-slate-655 dark:text-slate-350">{statusMessage}</p>
+          <div className="pt-2">
+            <Button
+              onClick={() => {
+                setBookingStatus(null);
+                setSelectedDoctor(null);
+                setSymptoms('');
+              }}
+              className="mx-auto"
+            >
+              Book Another Appointment
+            </Button>
+          </div>
         </div>
       ) : (
         <>
           {bookingStatus === 'error' && (
-            <div className="flex gap-2.5 items-center bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-xl p-4 text-xs font-bold text-rose-600 dark:text-rose-450">
-              <AlertCircle className="w-5 h-5 shrink-0" />
+            <div className="flex gap-2.5 items-center bg-red-50 border border-red-100 rounded-xl p-4 text-xs font-bold text-red-600 dark:bg-red-955/20 dark:border-red-900 dark:text-red-400">
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{statusMessage}</span>
             </div>
           )}
 
           {!selectedDoctor ? (
-            // Search Doctor View
+            /* Step 1: Doctor Search and Listing */
             <div className="space-y-6">
-              <div className="flex gap-3 bg-white dark:bg-slate-900/40 p-4 border border-slate-200 dark:border-slate-850 rounded-2xl shadow-sm">
+              <div className="flex gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 p-4 rounded-xl shadow-xs">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Filter by specialisation (e.g. Cardiology, Pediatrics)..."
+                    placeholder="Search by specialization (e.g. Cardiology, General Practitioner)..."
                     value={specialisation}
                     onChange={(e) => setSpecialisation(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-250 dark:border-slate-850 rounded-xl focus:border-blue-500 focus:outline-none"
+                    className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-205 dark:border-slate-850 rounded-lg focus:border-blue-500 focus:outline-none"
                   />
                 </div>
-                <button
-                  onClick={loadDoctors}
-                  className="px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs rounded-xl cursor-pointer"
-                >
-                  Search
-                </button>
+                <Button onClick={loadDoctors}>Search</Button>
               </div>
 
               {loading ? (
-                <div className="py-12 text-center text-xs font-semibold text-slate-400">Loading doctor directory...</div>
+                <div className="py-12 text-center text-xs font-bold text-slate-455 animate-pulse">Syncing doctor records...</div>
               ) : doctors.length === 0 ? (
-                <div className="py-12 text-center text-xs font-semibold text-slate-400 italic">
-                  No active doctors match the criteria.
-                </div>
+                <div className="py-12 text-center text-xs font-bold text-slate-400 italic">No doctors match your search.</div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {doctors.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/30 p-5 rounded-2xl hover:border-blue-500/30 transition-all space-y-4"
-                    >
+                    <Card key={doc.id} className="flex flex-col justify-between space-y-4">
                       <div>
-                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
-                          <User className="w-5 h-5 text-blue-500" /> Dr. {doc.user.name}
-                        </h3>
-                        <p className="text-xs text-blue-600 dark:text-cyan-400 font-bold mt-1">
-                          {doc.specialisation}
-                        </p>
+                        <h3 className="text-sm font-extrabold text-slate-800 dark:text-white">Dr. {doc.user?.name}</h3>
+                        <p className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase mt-0.5">{doc.specialisation}</p>
+                        
+                        <div className="text-[10px] text-slate-500 font-semibold space-y-1 mt-3 p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200/50 dark:border-slate-800">
+                          <p>⏱️ Consult interval: {doc.slotDuration} mins</p>
+                          <p>📅 Working hours: {doc.workingHoursStart} - {doc.workingHoursEnd}</p>
+                        </div>
                       </div>
-                      <div className="flex justify-between items-center text-[10px] text-slate-500 font-semibold">
-                        <span>Slots: {doc.slotDuration} min</span>
-                        <span>Hours: {doc.workingHoursStart} - {doc.workingHoursEnd}</span>
-                      </div>
-                      <button
+                      
+                      <Button
                         onClick={() => setSelectedDoctor(doc)}
-                        className="w-full py-2 bg-slate-50 hover:bg-blue-500 hover:text-white border border-slate-200 dark:border-slate-800 hover:border-transparent text-slate-700 dark:text-slate-350 text-xs font-bold rounded-xl cursor-pointer transition-all"
+                        variant="secondary"
+                        className="w-full py-2 border border-slate-200"
                       >
-                        Check Availability
-                      </button>
-                    </div>
+                        Check Availability &rarr;
+                      </Button>
+                    </Card>
                   ))}
                 </div>
               )}
             </div>
           ) : (
-            // Availability and Booking View
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Slots Column */}
-              <div className="lg:col-span-7 space-y-4 bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-900 p-5 rounded-2xl">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">
-                  Select Date & Time
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Date</label>
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      min={new Date().toISOString().split('T')[0]}
-                      onChange={(e) => {
-                        setHeldSlot(null);
-                        setHoldTimer(0);
-                        setSelectedDate(e.target.value);
-                      }}
-                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-250 dark:border-slate-850 rounded-xl focus:outline-none"
-                    />
-                  </div>
+            /* Step 2: Slot Selection & Checkout Summary Panel */
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              
+              {/* Left Column: Calendar Slider & Hour Grids (7 cols) */}
+              <div className="lg:col-span-7 space-y-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 p-6 rounded-xl shadow-xs">
+                
+                {/* Practitioner Info Header */}
+                <div className="pb-4 border-b border-slate-100 dark:border-slate-800">
+                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Dr. {selectedDoctor.user?.name}</h2>
+                  <p className="text-xs text-blue-650 dark:text-blue-400 font-bold uppercase">{selectedDoctor.specialisation}</p>
+                </div>
 
+                {/* Horizontal Calendar Date Slider */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">1. Choose Date</span>
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {next7Days.map((d) => {
+                      const isSelected = selectedDate === d.dateStr;
+                      return (
+                        <button
+                          key={d.dateStr}
+                          type="button"
+                          onClick={() => {
+                            setHeldSlot(null);
+                            setHoldTimer(0);
+                            setSelectedDate(d.dateStr);
+                          }}
+                          className={`px-4 py-3 rounded-lg text-center shrink-0 border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-blue-600 border-transparent text-white shadow-xs font-bold'
+                              : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300 hover:border-slate-350 hover:bg-slate-100/50'
+                          }`}
+                        >
+                          <span className="text-[9px] uppercase tracking-wider block font-bold opacity-80">{d.dayName}</span>
+                          <span className="text-sm font-extrabold block mt-0.5">{d.dayNum}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Available Hours Slots Selector */}
+                <div className="space-y-2.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">2. Select Hour</span>
+                  
                   {loading ? (
-                    <div className="py-8 text-center text-xs font-semibold text-slate-400">Loading slots...</div>
+                    <div className="py-8 text-center text-xs font-bold text-slate-455 animate-pulse">Syncing practice hours...</div>
                   ) : slots.length === 0 ? (
-                    <div className="py-8 text-center text-xs font-semibold text-slate-400 italic bg-slate-50 dark:bg-slate-950/40 rounded-xl">
-                      No available slots on this date.
+                    <div className="py-8 text-center text-xs text-slate-400 italic bg-slate-50 dark:bg-slate-955 rounded-xl border border-slate-200/50">
+                      No slots available on this date.
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
                       {slots.map((slotStr) => {
                         const slotTime = new Date(slotStr);
                         const displayTime = slotTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -296,14 +333,14 @@ export default function BookingPage({ token, user }) {
                             key={slotStr}
                             onClick={() => handleHoldSlot(slotStr)}
                             disabled={heldSlot && !isHeld}
-                            className={`p-2.5 text-xs font-bold rounded-xl border text-center transition-all cursor-pointer ${
+                            className={`p-2.5 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
                               isHeld
-                                ? 'bg-blue-500 text-white border-transparent shadow-md'
-                                : 'bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-850 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-cyan-500/5 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                                ? 'bg-blue-600 text-white border-transparent shadow-xs'
+                                : 'bg-slate-50 dark:bg-slate-955 border-slate-200 dark:border-slate-800 hover:border-blue-500 hover:bg-blue-500/5 text-slate-700 dark:text-slate-350 disabled:opacity-40 disabled:cursor-not-allowed'
                             }`}
                           >
-                            <Clock className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
-                            {displayTime}
+                            <Clock className="w-3.5 h-3.5 shrink-0" />
+                            <span>{displayTime}</span>
                           </button>
                         );
                       })}
@@ -312,56 +349,60 @@ export default function BookingPage({ token, user }) {
                 </div>
               </div>
 
-              {/* Booking Column */}
-              <div className="lg:col-span-5 bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-900 p-5 rounded-2xl flex flex-col justify-between">
+              {/* Right Column: Checkout Summary Card (5 cols) */}
+              <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 p-6 rounded-xl flex flex-col justify-between shadow-xs">
                 <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">
-                    Confirm Details
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-455 mb-4">
+                    Booking Summary
                   </h3>
-                  <div className="border border-slate-100 dark:border-slate-850 p-4 rounded-xl space-y-2 mb-4">
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-350">
-                      Doctor: <span className="text-blue-500">Dr. {selectedDoctor.user.name}</span>
+                  
+                  <div className="border border-slate-200 dark:border-slate-800 p-4 rounded-xl space-y-3 bg-slate-50 dark:bg-slate-955 text-xs font-bold">
+                    <p className="text-slate-700 dark:text-slate-300">
+                      Doctor: <span className="text-blue-650 dark:text-blue-400">Dr. {selectedDoctor.user?.name}</span>
                     </p>
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-350">
-                      Specialisation: <span className="text-slate-500">{selectedDoctor.specialisation}</span>
+                    <p className="text-[10px] text-slate-500">
+                      Specialisation: <span>{selectedDoctor.specialisation}</span>
                     </p>
+                    
                     {heldSlot ? (
-                      <div className="bg-blue-500/5 border border-blue-500/10 p-3 rounded-lg mt-2">
-                        <p className="text-xs font-bold text-blue-600 dark:text-cyan-400">
-                          Selected Slot: {new Date(heldSlot).toLocaleString()}
+                      <div className="bg-blue-500/5 border border-blue-500/10 p-3 rounded-lg mt-3 space-y-1.5">
+                        <p className="text-blue-650 dark:text-blue-400 flex items-center gap-1.5">
+                          <Check className="w-4 h-4 text-emerald-500" />
+                          <span>Slot Locked: {new Date(heldSlot).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </p>
-                        <p className="text-[10px] font-semibold text-rose-500 mt-1">
-                          Held for: {formatTimer(holdTimer)}
+                        <p className="text-[10px] text-rose-500 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                          Hold expires in: {formatTimer(holdTimer)}
                         </p>
                       </div>
                     ) : (
-                      <p className="text-xs font-semibold text-slate-400 italic">Please select a time slot on the left to lock it.</p>
+                      <p className="text-[11px] text-slate-450 dark:text-slate-550 italic font-semibold pt-1">Please select an hourly slot on the left to lock it.</p>
                     )}
                   </div>
                 </div>
 
                 {heldSlot && (
-                  <form onSubmit={handleBookAppointment} className="space-y-4 pt-2">
-                    <div>
-                      <label className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1">
-                        <Activity className="w-3.5 h-3.5 text-rose-500" /> Share symptoms in advance (required)
-                      </label>
-                      <textarea
-                        value={symptoms}
-                        onChange={(e) => setSymptoms(e.target.value)}
-                        placeholder="Describe what you are experiencing, how long you've had it, etc."
-                        rows={4}
-                        className="w-full mt-1.5 p-3 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-250 dark:border-slate-850 rounded-xl focus:outline-none focus:border-blue-500"
-                        required
-                      />
+                  <form onSubmit={handleBookAppointment} className="space-y-4 pt-4">
+                    <Textarea
+                      label="Reason for visit / symptoms intake"
+                      value={symptoms}
+                      onChange={(e) => setSymptoms(e.target.value)}
+                      placeholder="Enter symptoms or details to prepare the practitioner..."
+                      required
+                    />
+                    
+                    <div className="flex gap-1.5 bg-blue-50 dark:bg-blue-955/20 border border-blue-100 dark:border-blue-900 p-3 rounded-lg text-[10px] text-blue-750 dark:text-blue-400 font-semibold leading-normal">
+                      <Sparkles className="w-4 h-4 shrink-0 text-blue-650 mt-0.5" />
+                      <span>Note: Shared symptoms are triaged by AI to compile a pre-visit overview checklist for your doctor.</span>
                     </div>
-                    <button
+
+                    <Button
                       type="submit"
                       disabled={loading}
-                      className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer transition-all"
+                      className="w-full py-2.5 font-bold"
                     >
-                      {loading ? 'Confirming...' : 'Book Appointment'}
-                    </button>
+                      {loading ? 'Confirming booking...' : 'Confirm appointment'}
+                    </Button>
                   </form>
                 )}
               </div>

@@ -1,140 +1,203 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Calendar, User, ArrowRight, ShieldCheck, Sparkles, Settings
+  Calendar, Search, Clock, ArrowRight, User, Pill, 
+  Activity, ShieldCheck, CheckCircle, RefreshCw, AlertTriangle
 } from 'lucide-react';
+import { Button, Card, Badge, StatusBadge, LoadingState, EmptyState } from '../components/UI';
 
-export default function Dashboard({ user }) {
+export default function Dashboard({ user, token }) {
   const navigate = useNavigate();
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const lastLoginString = new Date().toLocaleDateString(undefined, { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
+  const loadAppointments = async () => {
+    if (!token || user?.role !== 'PATIENT') return;
+    try {
+      setLoading(true);
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5051'}/api/appointments/patient`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAppointments(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error('Error fetching appointments:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const features = [];
+  useEffect(() => {
+    if (token && user) {
+      loadAppointments();
+    }
+  }, [token, user]);
 
-  // Admin features
-  if (user && (user.role === 'ADMIN' || user.isAdmin)) {
-    features.push({
-      title: 'Admin Operations Console',
-      icon: <ShieldCheck className="w-6 h-6" />,
-      colorClass: 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
-      description: 'Register doctor directory, configure schedule templates, toggle statuses, and schedule leave dates.',
-      path: '/admin/portal'
-    });
+  // If doctor or admin: redirect to their respective portals or render a custom link dashboard
+  useEffect(() => {
+    if (user?.role === 'DOCTOR') {
+      navigate('/doctor/portal');
+    } else if (user?.role === 'ADMIN' || user?.isAdmin) {
+      navigate('/admin/portal');
+    }
+  }, [user]);
+
+  if (user?.role !== 'PATIENT') {
+    return <LoadingState message="Redirecting to practitioner workspace..." />;
   }
 
-  // Doctor features
-  if (user && user.role === 'DOCTOR') {
-    features.push({
-      title: 'Doctor Portal',
-      icon: <Calendar className="w-6 h-6" />,
-      colorClass: 'text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20',
-      description: 'Review upcoming schedules, patient symptom lists, and submit clinical consultation notes and prescriptions.',
-      path: '/doctor/portal'
-    });
-  }
-
-  // Patient features
-  if (!user || user.role === 'PATIENT') {
-    features.push({
-      title: 'Book Appointment',
-      icon: <Calendar className="w-6 h-6 animate-pulse" />,
-      colorClass: 'text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20',
-      description: 'Search active doctor directories, query slot availability, temporarily hold slots, and book appointments.',
-      path: '/booking'
-    });
-    features.push({
-      title: 'My Appointments',
-      icon: <Calendar className="w-6 h-6" />,
-      colorClass: 'text-teal-600 dark:text-teal-400 bg-teal-500/10 border-teal-500/20',
-      description: 'View your upcoming appointments, pre-visit summaries, prescriptions, and follow-up clinical instructions.',
-      path: '/appointments'
-    });
-  }
-
-  // Account settings for all roles
-  features.push({
-    title: 'Account Settings',
-    icon: <User className="w-6 h-6" />,
-    colorClass: 'text-slate-500 bg-slate-500/10 border-slate-500/20',
-    description: 'Manage your profile, preferences, and account settings.',
-    path: '/profile'
-  });
+  // Derive Patient metrics
+  const upcomingAppointments = appointments.filter(a => a.status === 'BOOKED');
+  const pastAppointments = appointments.filter(a => a.status === 'COMPLETED');
+  const cancelledAppointments = appointments.filter(a => a.status === 'CANCELLED');
+  
+  // Sort upcoming chronologically
+  const sortedUpcoming = [...upcomingAppointments].sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+  const nextApp = sortedUpcoming[0]; // Nearest upcoming appointment
+  const otherUpcoming = sortedUpcoming.slice(1);
 
   return (
-    <div className="space-y-8 pb-12 animate-fade-in">
+    <div className="space-y-8 font-sans animate-fade-in">
       
-      {/* Welcome Banner */}
-      <section className="relative overflow-hidden border border-slate-200 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900/40 p-6 sm:p-8 shadow-sm dark:shadow-none">
-        {/* Glow behind greeting */}
-        <div className="absolute right-0 top-0 w-60 h-60 bg-blue-500/5 dark:bg-cyan-500/5 rounded-full blur-[80px] -z-10"></div>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-850 dark:text-slate-550 flex items-center gap-2">
-              Welcome back, {user?.name || 'Practitioner'} 👋
-            </h1>
-            <p className="text-sm font-semibold text-blue-600 dark:text-cyan-400 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4" />
-              Healthcare Appointment & Follow-up Manager
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-              Access the clinical portal to manage appointments, configure working hours templates, view pre-visit summaries, and write prescriptions.
-            </p>
-          </div>
-          <div className="bg-slate-100/60 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-2xl px-4 py-3 text-right shrink-0">
-            <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 block">Current Session</span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{lastLoginString}</span>
-          </div>
-        </div>
-      </section>
+      {/* 1. Greeting Banner */}
+      <div>
+        <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">Good morning, {user.name}</h1>
+        <p className="text-xs text-slate-500 font-semibold mt-0.5">Manage your care from one place.</p>
+      </div>
 
-      {/* Feature Grid */}
-      <section className="space-y-4">
-        <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Portal Modules</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, idx) => (
-            <div 
-              key={idx} 
-              className="border border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-900/20 p-6 rounded-2xl flex flex-col justify-between hover:-translate-y-1.5 transition-all duration-350 shadow-sm hover:shadow-md dark:shadow-none hover:border-blue-500/30 dark:hover:border-cyan-500/20 group h-full"
-            >
-              <div className="space-y-4">
-                <div className={`p-3 rounded-xl w-fit border ${feature.colorClass}`}>
-                  {feature.icon}
+      {loading && appointments.length === 0 ? (
+        <LoadingState message="Syncing medical chart..." />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Left panel: Appointments & Care (8 cols) */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Highlighted Next Appointment */}
+            <section className="space-y-3">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Your next appointment</h3>
+              {nextApp ? (
+                <div className="border-2 border-blue-500/20 bg-white dark:bg-slate-900 p-6 rounded-xl space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-extrabold text-blue-650 dark:text-blue-400 uppercase tracking-wider">Scheduled Consultation</span>
+                      <h4 className="text-base font-extrabold text-slate-900 dark:text-white">Dr. {nextApp.doctor?.user?.name}</h4>
+                      <p className="text-xs text-slate-500 font-bold">{nextApp.doctor?.specialisation} Specialist</p>
+                    </div>
+                    <Badge variant="success">Confirmed</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 py-2.5 border-y border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <span className="flex items-center gap-1.5">📅 {new Date(nextApp.dateTime).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
+                    <span className="flex items-center gap-1.5">🕒 {new Date(nextApp.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-1.5">
+                    <p className="text-[10px] text-slate-400 italic max-w-sm font-semibold">Reason: "{nextApp.symptoms}"</p>
+                    <Button onClick={() => navigate('/appointments')} className="px-4 py-1.5 font-bold">
+                      View appointment
+                    </Button>
+                  </div>
                 </div>
-                <h3 className="text-lg font-bold text-slate-850 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors">
-                  {feature.title}
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-450 leading-relaxed font-semibold">
-                  {feature.description}
-                </p>
-              </div>
-              
-              <button
-                onClick={() => navigate(feature.path)}
-                className="mt-6 w-full py-2.5 bg-slate-50 dark:bg-slate-955/60 hover:bg-blue-500 hover:text-white dark:hover:bg-cyan-500 dark:hover:text-slate-955 border border-slate-200 dark:border-slate-850 hover:border-transparent dark:hover:border-transparent text-slate-700 dark:text-slate-350 text-xs font-extrabold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 group/btn shadow-inner"
-              >
-                Open Module
-                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
+              ) : (
+                <div className="border border-slate-200 dark:border-slate-800 p-6 rounded-xl bg-white dark:bg-slate-900/10 text-center py-8 space-y-3">
+                  <Calendar className="w-8 h-8 text-slate-300 mx-auto" />
+                  <p className="text-xs font-bold text-slate-700">No scheduled visits</p>
+                  <p className="text-[10px] text-slate-450 font-semibold">You don't have any medical slot reservations confirmed.</p>
+                  <Button onClick={() => navigate('/booking')} className="mx-auto py-1.5 px-4 font-bold">
+                    Schedule a Consultation
+                  </Button>
+                </div>
+              )}
+            </section>
 
-      {/* Diagnostics Check */}
-      <section className="border border-slate-200 dark:border-slate-900 rounded-2xl bg-white dark:bg-slate-900/20 p-6 space-y-3 shadow-sm dark:shadow-none">
-        <span className="text-[10px] uppercase font-bold text-slate-400 block">System Telemetry</span>
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-ping"></span>
-          <span className="text-xs text-slate-600 dark:text-slate-400 font-bold">
-            Appointment engine and notification services operational
-          </span>
+            {/* Other Upcoming Appointments list */}
+            {otherUpcoming.length > 0 && (
+              <section className="space-y-3">
+                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Upcoming appointments</h3>
+                <div className="space-y-2">
+                  {otherUpcoming.map(app => (
+                    <div key={app.id} className="border border-slate-200 dark:border-slate-850 p-4 rounded-xl bg-white dark:bg-slate-900 flex justify-between items-center text-xs">
+                      <div>
+                        <h4 className="font-extrabold text-slate-800 dark:text-slate-100">Dr. {app.doctor?.user?.name}</h4>
+                        <p className="text-[10px] text-slate-450 mt-0.5 font-bold">{app.doctor?.specialisation} · {new Date(app.dateTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                      </div>
+                      <button onClick={() => navigate('/appointments')} className="text-[10px] font-bold text-blue-600 hover:underline">ViewDetails &rarr;</button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Recent Visits list */}
+            <section className="space-y-3">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Recent visits</h3>
+              {pastAppointments.length > 0 ? (
+                <div className="space-y-2">
+                  {pastAppointments.slice(0, 3).map(app => (
+                    <div key={app.id} className="border border-slate-205 dark:border-slate-850 p-4 rounded-xl bg-white dark:bg-slate-900 flex justify-between items-center text-xs">
+                      <div>
+                        <h4 className="font-extrabold text-slate-850 dark:text-slate-200">Dr. {app.doctor?.user?.name}</h4>
+                        <p className="text-[10px] text-slate-455 mt-0.5 font-bold">Completed on {new Date(app.dateTime).toLocaleDateString()}</p>
+                      </div>
+                      <button onClick={() => navigate('/appointments')} className="text-[10px] font-bold text-blue-600 hover:underline">Review Care Summary &rarr;</button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] text-slate-450 italic py-3 font-semibold">No recent clinical visits recorded.</p>
+              )}
+            </section>
+
+          </div>
+
+          {/* Right sidebar: Follow-up Tasks / Reminders (4 cols) */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            {/* Quick Actions Panel */}
+            <section className="border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 p-5 rounded-xl space-y-4">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Intake Actions</h3>
+              <div className="space-y-2.5">
+                <Button onClick={() => navigate('/booking')} className="w-full py-2 flex items-center justify-center gap-1">
+                  <Search className="w-3.5 h-3.5" /> Book New Visit
+                </Button>
+                <Button onClick={() => navigate('/appointments')} variant="secondary" className="w-full py-2 border border-slate-200">
+                  View Medical History
+                </Button>
+              </div>
+            </section>
+
+            {/* Follow-up tasks checklist compiled from completed prescriptions */}
+            <section className="border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 p-5 rounded-xl space-y-4">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Follow-up tasks</h3>
+              
+              <div className="space-y-3">
+                {pastAppointments.some(a => a.consultation?.prescription?.items?.length > 0) ? (
+                  pastAppointments.flatMap(a => a.consultation.prescription.items).slice(0, 3).map((item, idx) => (
+                    <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-850 rounded-xl space-y-1.5">
+                      <div className="flex justify-between items-center text-[9px] font-bold text-slate-400">
+                        <span>ACTIVE PRESCRIPTION</span>
+                        <span>Dosage: {item.dosage}</span>
+                      </div>
+                      <h4 className="text-xs font-extrabold text-slate-800 dark:text-white flex items-center gap-1">
+                        <Pill className="w-3.5 h-3.5 text-teal-600" /> {item.medicineName}
+                      </h4>
+                      <p className="text-[10px] text-slate-500 font-semibold">{item.frequency} · Duration: {item.duration}</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-4 text-center text-xs text-slate-400 font-semibold italic">
+                    No active prescriptions or follow-up timelines scheduled.
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+
         </div>
-      </section>
+      )}
 
     </div>
   );

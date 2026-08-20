@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const NODE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050';
+const NODE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5051';
 const ML_API_URL = import.meta.env.VITE_ML_API_URL || 'http://localhost:8000';
 
 const getHeaders = (token) => ({
