@@ -10,11 +10,11 @@ if (resendApiKey) {
   console.warn('⚠ RESEND_API_KEY is not defined. Email service running in fallback/development mode.');
 }
 
-export const fromEmail = (process.env.SMTP_FROM && process.env.SMTP_FROM !== 'no-reply@medguide.ai')
+export const fromEmail = (process.env.SMTP_FROM && process.env.SMTP_FROM !== 'no-reply@caremanager.health')
   ? process.env.SMTP_FROM
   : 'onboarding@resend.dev';
 
-export const fromAddress = `Healthcare Manager <${fromEmail}>`;
+export const fromAddress = `CareManager <${fromEmail}>`;
 
 export interface SendEmailOptions {
   to: string;
