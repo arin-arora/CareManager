@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import useApp from './hooks/useApp';
 import MainLayout from './layouts/MainLayout';
 import AuthConsole from './pages/AuthConsole';
-import LandingPage from './pages/LandingPage';
+import RoleSelectionHomepage from './pages/RoleSelectionHomepage';
 import Dashboard from './pages/Dashboard';
 import VerifyEmail from './pages/VerifyEmail';
 import ResetPassword from './pages/ResetPassword';
@@ -23,19 +23,19 @@ export default function App() {
         setIsLogin={appState.setIsLogin}
       >
         <Routes>
-          {/* Landing Page or Dashboard Redirect */}
+          {/* Role Selection Public Landing Page or Dashboard Redirect */}
           <Route 
             path="/" 
-            element={appState.token ? <Navigate to="/dashboard" replace /> : <LandingPage {...appState} />} 
+            element={appState.token ? <Navigate to="/dashboard" replace /> : <RoleSelectionHomepage {...appState} />} 
           />
           
-          {/* New Dashboard Route */}
+          {/* Dashboard Route */}
           <Route 
             path="/dashboard" 
             element={appState.token ? <Dashboard {...appState} /> : <Navigate to="/login" replace />} 
           />
           
-          {/* Defined App Routes */}
+          {/* App Routes */}
           <Route path="/booking" element={appState.token ? <BookingPage {...appState} /> : <Navigate to="/login" replace />} />
           <Route path="/appointments" element={appState.token ? <PatientAppointments {...appState} /> : <Navigate to="/login" replace />} />
           <Route path="/doctor/portal" element={appState.token && appState.user?.role === 'DOCTOR' ? <DoctorPortal {...appState} /> : <Navigate to="/login" replace />} />

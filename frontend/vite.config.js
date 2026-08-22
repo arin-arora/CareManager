@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss()
   ],
   server: {
-    port: 3001,
+    port: 3002,
     host: true // Expose host for Docker container port mapping
   }
 })
