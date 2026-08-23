@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 const NODE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050';
-const ML_API_URL = import.meta.env.VITE_ML_API_URL || 'http://localhost:8000';
 
 const getHeaders = (token) => ({
   headers: { Authorization: `Bearer ${token}` }
@@ -47,54 +46,6 @@ export const apiService = {
   // Health check API
   fetchHealthStatus: async () => {
     const response = await axios.get(`${NODE_API_URL}/api/health`);
-    return response.data;
-  },
-
-  runFullDiagnostics: async () => {
-    const response = await axios.post(`${NODE_API_URL}/api/health/run-diagnostics`);
-    return response.data;
-  },
-
-  // Symptoms APIs
-  fetchSymptomHistory: async (token) => {
-    const response = await axios.get(`${NODE_API_URL}/api/symptoms`, getHeaders(token));
-    return response.data;
-  },
-
-  predictSymptom: async (token, payload) => {
-    const response = await axios.post(`${NODE_API_URL}/api/symptoms/predict`, payload, getHeaders(token));
-    return response.data;
-  },
-
-  saveSymptom: async (token, payload) => {
-    const response = await axios.post(`${NODE_API_URL}/api/symptoms`, payload, getHeaders(token));
-    return response.data;
-  },
-
-  // Medications APIs
-  fetchMedicines: async (token) => {
-    const response = await axios.get(`${NODE_API_URL}/api/medicines`, getHeaders(token));
-    return response.data;
-  },
-
-  addMedicine: async (token, medForm) => {
-    const response = await axios.post(`${NODE_API_URL}/api/medicines`, medForm, getHeaders(token));
-    return response.data;
-  },
-
-  deleteMedicine: async (token, id) => {
-    const response = await axios.delete(`${NODE_API_URL}/api/medicines/${id}`, getHeaders(token));
-    return response.data;
-  },
-
-  // Lab Reports APIs
-  fetchLabReports: async (token) => {
-    const response = await axios.get(`${NODE_API_URL}/api/lab-reports`, getHeaders(token));
-    return response.data;
-  },
-
-  parseLabReport: async (token, payload) => {
-    const response = await axios.post(`${NODE_API_URL}/api/lab-reports`, payload, getHeaders(token));
     return response.data;
   }
 };

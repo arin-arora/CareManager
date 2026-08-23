@@ -5,11 +5,14 @@ import {
   ArrowRight, Sparkles, CheckCircle2, FileText, Lock, Activity
 } from 'lucide-react';
 
-export default function LandingPage({ setIsLogin }) {
+export default function LandingPage({ setIsLogin, setAuthForm, authForm }) {
   const navigate = useNavigate();
 
-  const handleCTA = (isSignUp) => {
-    setIsLogin(!isSignUp);
+  const handleRoleCTA = (role, isSignUp = false) => {
+    if (setIsLogin) setIsLogin(!isSignUp);
+    if (setAuthForm) {
+      setAuthForm(prev => ({ ...prev, role }));
+    }
     navigate('/login');
   };
 
@@ -39,17 +42,18 @@ export default function LandingPage({ setIsLogin }) {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
             <button
-              onClick={() => navigate('/booking')}
+              onClick={() => handleRoleCTA('PATIENT', true)}
               className="w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-lg shadow-blue-500/20 cursor-pointer flex items-center justify-center gap-2 group"
             >
-              Find Doctors & Book Slots
+              Get Started as Patient
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
             <button
-              onClick={() => handleCTA(false)}
-              className="w-full sm:w-auto px-8 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-extrabold rounded-xl text-xs transition-all cursor-pointer"
+              onClick={() => handleRoleCTA('DOCTOR', false)}
+              className="w-full sm:w-auto px-8 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-extrabold rounded-xl text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              Sign In to Account
+              <Stethoscope className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+              Doctor Portal Sign In
             </button>
           </div>
         </div>
@@ -59,70 +63,76 @@ export default function LandingPage({ setIsLogin }) {
       <section className="space-y-6">
         <div className="text-center space-y-2">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100">
-            Access Portals by Role
+            How will you use CareManager?
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
-            Choose your role portal to manage healthcare appointments, clinical consultations, or directory onboarding.
+            Choose your account role below to enter the tailored healthcare appointment and clinical portal.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Patient Portal */}
+          {/* Patient Portal Card */}
           <div className="border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/30 p-6 rounded-2xl flex flex-col justify-between hover:border-blue-500/40 transition-all shadow-sm group">
             <div className="space-y-4">
               <div className="p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl w-fit border border-blue-500/20">
                 <Calendar className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">Patient Portal</h3>
+              <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <span>👤 Patient</span>
+              </h3>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                Search verified medical specialists by designation & specialty, hold time slots in real time, view AI pre-visit triage summaries, and review digital prescriptions.
+                Book appointments and manage your healthcare. Search verified specialists, lock time slots in real-time, view AI pre-visit summaries, and access prescriptions.
               </p>
             </div>
             <button
-              onClick={() => navigate('/booking')}
+              onClick={() => handleRoleCTA('PATIENT', false)}
               className="mt-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
             >
-              Book Appointment
+              Patient Sign In / Register
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* Doctor Portal */}
-          <div className="border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/30 p-6 rounded-2xl flex flex-col justify-between hover:border-blue-500/40 transition-all shadow-sm group">
+          {/* Doctor Portal Card */}
+          <div className="border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/30 p-6 rounded-2xl flex flex-col justify-between hover:border-teal-500/40 transition-all shadow-sm group">
             <div className="space-y-4">
               <div className="p-3 bg-teal-500/10 text-teal-600 dark:text-teal-400 rounded-xl w-fit border border-teal-500/20">
                 <Stethoscope className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">Doctor Portal</h3>
+              <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <span>🩺 Doctor</span>
+              </h3>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                Review assigned patient schedules, inspect AI pre-visit chief complaints, complete consultations with SOAP notes & diagnoses, and issue digital prescriptions.
+                Manage appointments and provide consultations. Review assigned patient schedules, inspect AI pre-visit triage summaries, write SOAP notes, and issue digital prescriptions.
               </p>
             </div>
             <button
-              onClick={() => handleCTA(false)}
+              onClick={() => handleRoleCTA('DOCTOR', false)}
               className="mt-6 py-2.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-950 font-extrabold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
             >
-              Doctor Login
+              Doctor Sign In / Register
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* Admin Portal */}
-          <div className="border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/30 p-6 rounded-2xl flex flex-col justify-between hover:border-blue-500/40 transition-all shadow-sm group">
+          {/* Admin Portal Card */}
+          <div className="border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/30 p-6 rounded-2xl flex flex-col justify-between hover:border-indigo-500/40 transition-all shadow-sm group">
             <div className="space-y-4">
               <div className="p-3 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl w-fit border border-indigo-500/20">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">Admin Portal</h3>
+              <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <span>🛡️ Administrator</span>
+              </h3>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                Onboard verified medical practitioners, configure weekly schedule templates, set slot duration rules, and manage doctor leave calendars.
+                Protected system console. Onboard verified medical practitioners, configure weekly schedule templates, set slot duration rules, and manage doctor leave calendars.
               </p>
             </div>
             <button
-              onClick={() => handleCTA(false)}
-              className="mt-6 py-2.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-950 font-extrabold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+              onClick={() => handleRoleCTA('PATIENT', false)}
+              className="mt-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-extrabold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
             >
-              Admin Access
+              Admin Portal Access
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

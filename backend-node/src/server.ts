@@ -2,15 +2,39 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
+import adminRoutes from './routes/admin';
+import doctorRoutes from './routes/doctor';
+import appointmentRoutes from './routes/appointment';
 import prisma from './config/db';
+import { outboxProcessor } from './services/outboxProcessor';
+import { reminderService } from './services/reminderService';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 
-// Enable CORS
-app.use(cors());
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://care-manager-sable.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5050'
+].filter(Boolean) as string[];
+
+// Enable CORS with explicit origin matching & credentials support
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Body Parser
 app.use(express.json());
@@ -23,6 +47,7 @@ app.get('/api/health', async (req, res) => {
     res.json({
       status: 'OK',
       database: 'Connected',
+      service: 'CareManager Backend Node API',
       timestamp: new Date()
     });
   } catch (err: any) {
@@ -34,10 +59,6 @@ app.get('/api/health', async (req, res) => {
     });
   }
 });
-
-import adminRoutes from './routes/admin';
-import doctorRoutes from './routes/doctor';
-import appointmentRoutes from './routes/appointment';
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -51,12 +72,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ msg: 'Something went wrong on the server' });
 });
 
-import { outboxProcessor } from './services/outboxProcessor';
-import { reminderService } from './services/reminderService';
-
 // Start Server
 app.listen(PORT, async () => {
-  console.log(`✓ Server running on port ${PORT}`);
+  console.log(`✓ CareManager Server running on port ${PORT}`);
   try {
     await prisma.$connect();
     console.log('✓ Connected to PostgreSQL via Prisma');
@@ -66,4 +84,5 @@ app.listen(PORT, async () => {
     console.error('✗ Failed to connect to database:', err.message);
   }
 });
+
 export default app;
