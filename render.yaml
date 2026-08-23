@@ -14,19 +14,10 @@ services:
         fromDatabase:
           name: caremanager-db
           property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: caremanager-redis
-          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
         value: https://care-manager-sable.vercel.app
-
-  - type: redis
-    name: caremanager-redis
-    ipAllowList: []
 
 databases:
   - name: caremanager-db
