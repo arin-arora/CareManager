@@ -77,11 +77,11 @@ export default function ResetPassword() {
         
         {/* Branding header */}
         <div className="flex flex-col items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-extrabold text-xl shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-teal-500 flex items-center justify-center text-slate-955 font-extrabold text-xl shadow-md shadow-teal-500/20">
             M
           </div>
-          <span className="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">
-            CareManager
+          <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-teal-600 via-teal-500 to-indigo-600 dark:from-teal-400 dark:to-emerald-400 bg-clip-text text-transparent">
+            CareManager Account
           </span>
         </div>
 
@@ -188,7 +188,7 @@ export default function ResetPassword() {
             <button
               type="submit"
               disabled={loading || password.length === 0}
-              className="w-full btn-primary-themed py-2.5 bg-blue-600 hover:bg-blue-550 text-white rounded-xl font-extrabold text-sm transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+              className="w-full btn-primary-themed py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-955 rounded-xl font-extrabold text-sm transition-all shadow-lg shadow-teal-500/10 cursor-pointer flex items-center justify-center gap-1.5"
             >
               {loading ? (
                 <>

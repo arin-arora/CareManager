@@ -10,21 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Enable CORS
-const allowedOrigins = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
-  : ['http://localhost:3002', 'http://localhost:5173'];
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(null, true);
-    },
-    credentials: true,
-  })
-);
+app.use(cors());
 
 // Body Parser
 app.use(express.json());

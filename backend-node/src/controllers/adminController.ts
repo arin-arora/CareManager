@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 
 export const createDoctor = async (req: Request, res: Response) => {
   try {
-    const { email, password, name, specialisation, workingHours, slotDuration } = req.body;
+    const { email, password, name, specialisation, designation, workingHours, slotDuration } = req.body;
 
     if (!email || !password || !name || !specialisation) {
       return res.status(400).json({ msg: 'Please provide all required fields (email, password, name, specialisation).' });
@@ -36,6 +36,7 @@ export const createDoctor = async (req: Request, res: Response) => {
         data: {
           userId: user.id,
           specialisation,
+          designation: designation || 'Consultant',
           workingHours: workingHours || null,
           slotDuration: slotDuration ? parseInt(slotDuration) : 30
         }
@@ -52,6 +53,7 @@ export const createDoctor = async (req: Request, res: Response) => {
         name: result.user.name,
         email: result.user.email,
         specialisation: result.profile.specialisation,
+        designation: result.profile.designation,
         workingHours: result.profile.workingHours,
         slotDuration: result.profile.slotDuration,
         isActive: result.profile.isActive
@@ -66,7 +68,7 @@ export const createDoctor = async (req: Request, res: Response) => {
 export const updateDoctor = async (req: Request, res: Response) => {
   try {
     const { id } = req.params; // doctorId
-    const { name, specialisation, workingHours, slotDuration, isActive } = req.body;
+    const { name, specialisation, designation, workingHours, slotDuration, isActive } = req.body;
 
     const doctor = await prisma.doctorProfile.findUnique({
       where: { id },
@@ -91,6 +93,7 @@ export const updateDoctor = async (req: Request, res: Response) => {
         where: { id },
         data: {
           specialisation: specialisation !== undefined ? specialisation : doctor.specialisation,
+          designation: designation !== undefined ? designation : doctor.designation,
           workingHours: workingHours !== undefined ? workingHours : doctor.workingHours,
           slotDuration: slotDuration !== undefined ? parseInt(slotDuration) : doctor.slotDuration,
           isActive: isActive !== undefined ? isActive : doctor.isActive

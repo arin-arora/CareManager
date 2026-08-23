@@ -1,19 +1,41 @@
-import React, { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Sun, Moon, Laptop, Menu, X, LogOut, User, Calendar, Search } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { 
+  Pill, FileText, Activity, User, Sun, Moon, 
+  Laptop, Menu, X, ChevronDown, LogOut, Settings 
+} from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { Button } from './UI';
 
 export default function Navbar({ user, handleLogout, setIsLogin }) {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const themeMenuRef = useRef(null);
+
+  // Close theme menu on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target)) {
+        setShowThemeMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const getNavLinkClass = ({ isActive }) =>
-    `px-3 py-2 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+    `px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer border ${
       isActive 
-        ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600' 
-        : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100'
+        ? 'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-500/25' 
+        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-900/50 border-transparent'
+    }`;
+
+  const getMobileNavLinkClass = ({ isActive }) =>
+    `px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border ${
+      isActive 
+        ? 'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-500/25' 
+        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-900/50 border-transparent'
     }`;
 
   const handleGuestNav = (targetId) => {
@@ -38,123 +60,161 @@ export default function Navbar({ user, handleLogout, setIsLogin }) {
     navigate('/login');
   };
 
+  const getThemeIcon = (t) => {
+    switch (t) {
+      case 'light': return <Sun className="w-4 h-4 text-amber-500" />;
+      case 'dark': return <Moon className="w-4 h-4 text-indigo-400" />;
+      case 'system': return <Laptop className="w-4 h-4 text-slate-500" />;
+      default: return <Sun className="w-4 h-4" />;
+    }
+  };
+
   return (
-    <header className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 sticky top-0 z-40">
+    <header className="border-b border-slate-200 dark:border-slate-900 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md sticky top-[37px] z-40">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         
-        {/* Left: Brand logo (Not glowing, clean clinical text) */}
-        <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 cursor-pointer group">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-extrabold text-sm shadow-xs">
+        {/* Left: Branding */}
+        <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 cursor-pointer group hover:opacity-90 transition-all duration-200">
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200">
             C
           </div>
-          <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-white">
+          <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 dark:from-blue-400 dark:to-teal-400 bg-clip-text text-transparent group-hover:brightness-110 transition-all duration-200">
             CareManager
           </span>
         </Link>
 
-        {/* Center: Navigation Links (Desktop) */}
-        <div className="hidden md:flex items-center gap-6">
-          <nav className="flex gap-2 items-center h-16">
-            {!user ? (
+        {/* Center/Right: Navigation (Desktop) */}
+        <div className="hidden md:flex items-center gap-4">
+          <nav className="flex gap-1 items-center">
+            {user ? (
+              <>
+                <NavLink to="/symptoms" className={getNavLinkClass}>
+                  Symptom Checker
+                </NavLink>
+                <NavLink to="/medications" className={getNavLinkClass}>
+                  <Pill className="w-3.5 h-3.5" />
+                  Medication Checker
+                </NavLink>
+                <NavLink to="/lab-reports" className={getNavLinkClass}>
+                  <FileText className="w-3.5 h-3.5" />
+                  Lab Analyzer
+                </NavLink>
+                {user?.role === 'PATIENT' && (
+                  <NavLink to="/appointments" className={getNavLinkClass}>
+                    Appointments
+                  </NavLink>
+                )}
+                <NavLink to="/health" className={getNavLinkClass}>
+                  <Activity className="w-3.5 h-3.5" />
+                  My Health
+                </NavLink>
+                {user?.isAdmin && (
+                  <NavLink to="/admin/dashboard" className={getNavLinkClass}>
+                    <Settings className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+                    Admin
+                  </NavLink>
+                )}
+                <NavLink to="/profile" className={getNavLinkClass}>
+                  <User className="w-3.5 h-3.5" />
+                  Account
+                </NavLink>
+              </>
+            ) : (
               <>
                 <button 
                   onClick={() => handleGuestNav('features')} 
-                  className="px-3 py-2 text-xs font-bold text-slate-550 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-900/50 cursor-pointer"
                 >
                   Features
                 </button>
                 <button 
                   onClick={() => handleGuestNav('how-it-works')} 
-                  className="px-3 py-2 text-xs font-bold text-slate-555 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-900/50 cursor-pointer"
                 >
-                  How it works
+                  About
                 </button>
-              </>
-            ) : (
-              <>
-                <NavLink to="/dashboard" className={getNavLinkClass} end>
-                  Dashboard
-                </NavLink>
-                {user.role === 'PATIENT' && (
-                  <>
-                    <NavLink to="/booking" className={getNavLinkClass}>
-                      Find Doctors
-                    </NavLink>
-                    <NavLink to="/appointments" className={getNavLinkClass}>
-                      Appointments
-                    </NavLink>
-                  </>
-                )}
-                {user.role === 'DOCTOR' && (
-                  <NavLink to="/doctor/portal" className={getNavLinkClass}>
-                    Workspace
-                  </NavLink>
-                )}
-                {(user.role === 'ADMIN' || user.isAdmin) && (
-                  <NavLink to="/admin/portal" className={getNavLinkClass}>
-                    Admin Console
-                  </NavLink>
-                )}
-                <NavLink to="/profile" className={getNavLinkClass}>
-                  Account
-                </NavLink>
+                <button 
+                  onClick={() => handleAuthRedirect(false)} 
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-900/50 cursor-pointer"
+                >
+                  Login
+                </button>
+                <button 
+                  onClick={() => handleAuthRedirect(true)} 
+                  className="ml-1 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-teal-500 hover:bg-teal-400 text-slate-950 transition-all cursor-pointer shadow-sm shadow-teal-500/10"
+                >
+                  Sign Up
+                </button>
               </>
             )}
           </nav>
-        </div>
 
-        {/* Right side: Session / Theme (Desktop) */}
-        <div className="hidden md:flex items-center gap-4">
-          {/* Light/Dark Toggle */}
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-pointer"
-            title="Toggle theme"
-          >
-            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-blue-600" />}
-          </button>
+          {/* Theme Dropdown Toggle */}
+          <div className="relative border-l border-slate-200 dark:border-slate-850 pl-4 flex items-center" ref={themeMenuRef}>
+            <button
+              onClick={() => setShowThemeMenu(!showThemeMenu)}
+              className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-850 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 transition-all cursor-pointer flex items-center justify-center"
+              title="Change theme"
+            >
+              {getThemeIcon(theme)}
+            </button>
 
-          {user ? (
-            <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
-              <span className="text-[11px] font-extrabold text-slate-700 dark:text-slate-300">{user.name}</span>
-              <Button 
-                variant="secondary"
-                onClick={handleLogout}
-                className="py-1.5 px-3 font-bold border border-slate-200"
-              >
-                Sign Out
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => handleAuthRedirect(false)} 
-                className="text-xs font-bold text-slate-655 dark:text-slate-400 hover:text-slate-900 cursor-pointer"
-              >
-                Sign In
-              </button>
-              <Button 
-                onClick={() => handleAuthRedirect(true)}
-                className="py-1.5 px-4"
-              >
-                Get Started
-              </Button>
+            {showThemeMenu && (
+              <div className="absolute right-0 top-12 w-32 rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 p-1.5 shadow-xl z-50">
+                {['light', 'dark', 'system'].map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => {
+                      setTheme(t);
+                      setShowThemeMenu(false);
+                    }}
+                    className={`w-full flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg transition-all text-left capitalize font-semibold cursor-pointer ${
+                      theme === t 
+                        ? 'bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100' 
+                        : 'text-slate-500 hover:text-slate-950 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/30'
+                    }`}
+                  >
+                    {getThemeIcon(t)}
+                    {t}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Logged in User Badge (Desktop) */}
+          {user && (
+            <div className="flex items-center gap-2 border-l border-slate-200 dark:border-slate-850 pl-4 h-8">
+              <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center shadow-inner">
+                <User className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 leading-none">{user.name}</span>
+                <button 
+                  onClick={handleLogout}
+                  className="text-[9px] text-slate-400 hover:text-red-500 dark:hover:text-red-400 font-semibold text-left mt-0.5 leading-none transition-all cursor-pointer flex items-center gap-0.5"
+                >
+                  <LogOut className="w-2 h-2" />
+                  Logout
+                </button>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Hamburger (Mobile) */}
-        <div className="flex items-center gap-2.5 md:hidden">
+        {/* Right: Hamburger / Toggle (Mobile) */}
+        <div className="flex items-center gap-3 md:hidden">
+          {/* Mobile Theme Toggle Trigger */}
           <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-1.5 rounded-lg text-slate-550 dark:text-slate-400 cursor-pointer"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : theme === 'light' ? 'system' : 'dark')}
+            className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300 cursor-pointer"
           >
-            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-blue-600" />}
+            {getThemeIcon(theme)}
           </button>
           
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="p-1.5 rounded-lg text-slate-550 dark:text-slate-400 cursor-pointer"
+            className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300 cursor-pointer"
           >
             {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -164,70 +224,87 @@ export default function Navbar({ user, handleLogout, setIsLogin }) {
 
       {/* Mobile Drawer Overlay */}
       {showMobileMenu && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-4 shadow-md absolute left-0 right-0 z-50">
-          <nav className="flex flex-col gap-2">
-            {!user ? (
+        <div className="md:hidden border-t border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950 p-4 space-y-4 shadow-lg absolute left-0 right-0 z-50">
+          <nav className="flex flex-col gap-1.5">
+            {user ? (
+              <>
+                <NavLink to="/symptoms" onClick={() => setShowMobileMenu(false)} className={getMobileNavLinkClass}>
+                  Symptom Checker
+                </NavLink>
+                <NavLink to="/medications" onClick={() => setShowMobileMenu(false)} className={getMobileNavLinkClass}>
+                  <Pill className="w-4 h-4 animate-bounce" />
+                  Medication Checker
+                </NavLink>
+                <NavLink to="/lab-reports" onClick={() => setShowMobileMenu(false)} className={getMobileNavLinkClass}>
+                  <FileText className="w-4 h-4" />
+                  Lab Analyzer
+                </NavLink>
+                {user?.role === 'PATIENT' && (
+                  <NavLink to="/appointments" onClick={() => setShowMobileMenu(false)} className={getMobileNavLinkClass}>
+                    Appointments
+                  </NavLink>
+                )}
+                <NavLink to="/health" onClick={() => setShowMobileMenu(false)} className={getMobileNavLinkClass}>
+                  <Activity className="w-4 h-4" />
+                  My Health
+                </NavLink>
+                {user?.isAdmin && (
+                  <NavLink to="/admin/dashboard" onClick={() => setShowMobileMenu(false)} className={getMobileNavLinkClass}>
+                    <Settings className="w-4 h-4" />
+                    Admin Control
+                  </NavLink>
+                )}
+                <NavLink to="/profile" onClick={() => setShowMobileMenu(false)} className={getMobileNavLinkClass}>
+                  <User className="w-4 h-4" />
+                  Account
+                </NavLink>
+
+                {/* Profile info block */}
+                <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-850 rounded-xl flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 flex items-center justify-center font-bold text-xs">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{user.name}</span>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      handleLogout();
+                      setShowMobileMenu(false);
+                    }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/15 transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    Logout
+                  </button>
+                </div>
+              </>
+            ) : (
               <>
                 <button 
                   onClick={() => handleGuestNav('features')} 
-                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 rounded-lg cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900/50 cursor-pointer"
                 >
                   Features
                 </button>
                 <button 
                   onClick={() => handleGuestNav('how-it-works')} 
-                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 rounded-lg cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900/50 cursor-pointer"
                 >
-                  How it works
+                  About
                 </button>
                 <button 
                   onClick={() => handleAuthRedirect(false)} 
-                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 rounded-lg cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900/50 cursor-pointer"
                 >
-                  Sign In
+                  Login
                 </button>
-                <Button 
-                  onClick={() => handleAuthRedirect(true)}
-                  className="w-full py-2"
+                <button 
+                  onClick={() => handleAuthRedirect(true)} 
+                  className="w-full py-3 mt-2 text-center rounded-xl text-sm font-extrabold bg-teal-500 text-slate-950 transition-all cursor-pointer shadow-sm shadow-teal-500/10"
                 >
-                  Get Started
-                </Button>
-              </>
-            ) : (
-              <>
-                <NavLink to="/dashboard" onClick={() => setShowMobileMenu(false)} className="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-lg block">
-                  Dashboard
-                </NavLink>
-                {user.role === 'PATIENT' && (
-                  <>
-                    <NavLink to="/booking" onClick={() => setShowMobileMenu(false)} className="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-lg block">
-                      Find Doctors
-                    </NavLink>
-                    <NavLink to="/appointments" onClick={() => setShowMobileMenu(false)} className="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-lg block">
-                      Appointments
-                    </NavLink>
-                  </>
-                )}
-                {user.role === 'DOCTOR' && (
-                  <NavLink to="/doctor/portal" onClick={() => setShowMobileMenu(false)} className="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-lg block">
-                    Doctor Workspace
-                  </NavLink>
-                )}
-                {(user.role === 'ADMIN' || user.isAdmin) && (
-                  <NavLink to="/admin/portal" onClick={() => setShowMobileMenu(false)} className="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-lg block">
-                    Admin Portal
-                  </NavLink>
-                )}
-                <NavLink to="/profile" onClick={() => setShowMobileMenu(false)} className="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-lg block">
-                  Account
-                </NavLink>
-                
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-slate-800">{user.name}</span>
-                  <Button variant="secondary" onClick={handleLogout} className="py-1 px-3">
-                    Sign Out
-                  </Button>
-                </div>
+                  Sign Up Free
+                </button>
               </>
             )}
           </nav>

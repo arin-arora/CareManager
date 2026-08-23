@@ -5,11 +5,14 @@
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
-    "build": "prisma generate && tsc",
+    "build": "tsc",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
+    "seed": "prisma db seed"
+  },
+  "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
@@ -35,8 +38,5 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.1.6"
   },
-  "private": true,
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  }
+  "private": true
 }

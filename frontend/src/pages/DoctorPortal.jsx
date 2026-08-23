@@ -3,7 +3,6 @@ import {
   Calendar, Clock, User, FileText, Activity, 
   CheckCircle, ArrowRight, Plus, Trash2, RefreshCw, AlertTriangle, Pill 
 } from 'lucide-react';
-import { Button, Card, Input, Textarea, Badge, StatusBadge, EmptyState, LoadingState } from '../components/UI';
 
 export default function DoctorPortal({ token }) {
   const [appointments, setAppointments] = useState([]);
@@ -20,7 +19,7 @@ export default function DoctorPortal({ token }) {
   const loadAppointments = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5051'}/api/appointments/doctor`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments/doctor`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -70,11 +69,12 @@ export default function DoctorPortal({ token }) {
       return;
     }
 
+    // Filter out empty medications
     const validMeds = prescriptionList.filter(m => m.medicineName.trim() !== '');
 
     try {
       setSubmitting(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5051'}/api/doctors/appointments/${selectedApp.id}/consultation`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/doctors/appointments/${selectedApp.id}/consultation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ export default function DoctorPortal({ token }) {
       });
 
       if (response.ok) {
-        alert('Consultation saved successfully!');
+        alert('Consultation details submitted successfully!');
         setSelectedApp(null);
         setNotes('');
         setFollowUpInfo('');
@@ -111,7 +111,7 @@ export default function DoctorPortal({ token }) {
   const handleRetryPreVisit = async (appId) => {
     try {
       setRetrying(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5051'}/api/appointments/${appId}/pre-visit-summary/retry`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments/${appId}/pre-visit-summary/retry`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -132,7 +132,7 @@ export default function DoctorPortal({ token }) {
   const handleRetryPostVisit = async (appId) => {
     try {
       setRetrying(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5051'}/api/appointments/${appId}/post-visit-summary/retry`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments/${appId}/post-visit-summary/retry`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -150,47 +150,36 @@ export default function DoctorPortal({ token }) {
     }
   };
 
-  // Metrics calculation
-  const totalApps = appointments.length;
-  const completedApps = appointments.filter(a => a.status === 'COMPLETED').length;
-  const pendingApps = appointments.filter(a => a.status === 'BOOKED').length;
-  const cancelledApps = appointments.filter(a => a.status === 'CANCELLED').length;
-
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-12 font-sans">
-      
-      {/* Workspace Header */}
-      <div className="border-b border-slate-205 dark:border-slate-800 pb-4">
-        <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">Clinical Workspace</h1>
-        <p className="text-xs text-slate-500 font-semibold mt-0.5">Manage daily schedules, consult pre-visit histories, write prescriptions, and log reports.</p>
+    <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-fade-in">
+      <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-850 dark:text-slate-100">Doctor Portal</h1>
+        <p className="text-xs text-slate-500 font-semibold mt-1">Review schedules, view patient symptoms, check pre-visit AI analyses, and log structured prescriptions.</p>
       </div>
 
-      {/* Grid: 3 columns (Timeline List, Workspace desk, Stats panel) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* Column 1: Patient timeline schedule (4 cols) */}
-        <div className="lg:col-span-4 space-y-4">
-          <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Today's Schedule</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Appointments List (5 cols) */}
+        <div className="lg:col-span-5 space-y-4">
+          <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Scheduled Consultations</h2>
           {loading && appointments.length === 0 ? (
-            <LoadingState message="Syncing workspace calendar..." />
+            <div className="py-12 text-center text-xs font-semibold text-slate-400">Loading schedule...</div>
           ) : appointments.length === 0 ? (
-            <EmptyState 
-              title="No patients scheduled"
-              description="There are no consultations scheduled for today."
-              icon={Calendar}
-            />
+            <div className="py-12 text-center text-xs text-slate-400 italic bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-850 rounded-2xl">
+              No appointments scheduled.
+            </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3.5">
               {appointments.map((app) => {
                 const isSelected = selectedApp?.id === app.id;
-                const slotHour = new Date(app.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                
+                const formattedTime = new Date(app.dateTime).toLocaleString();
+                const isCompleted = app.status === 'COMPLETED';
+
                 return (
                   <div
                     key={app.id}
                     onClick={() => {
                       setSelectedApp(app);
-                      if (app.status !== 'COMPLETED') {
+                      if (!isCompleted) {
                         setNotes('');
                         setFollowUpInfo('');
                         setPrescriptionList([
@@ -198,24 +187,34 @@ export default function DoctorPortal({ token }) {
                         ]);
                       }
                     }}
-                    className={`border p-4.5 rounded-xl bg-white dark:bg-slate-900 transition-all cursor-pointer flex justify-between items-center ${
+                    className={`border p-5 rounded-2xl bg-white dark:bg-slate-900/30 transition-all cursor-pointer flex justify-between items-start ${
                       isSelected
-                        ? 'border-blue-500 ring-2 ring-blue-500/10'
-                        : 'border-slate-200 dark:border-slate-850 hover:border-slate-450/40'
+                        ? 'border-blue-500 shadow-md translate-x-1'
+                        : 'border-slate-200 dark:border-slate-850 hover:border-slate-400/50'
                     }`}
                   >
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-extrabold text-blue-650 bg-blue-50 px-2 py-0.5 rounded">
-                          {slotHour}
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                          {app.patient.name}
                         </span>
-                        <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100">
-                          {app.patient?.name}
+                        <span className={`px-2 py-0.5 text-[9px] font-extrabold rounded-md ${
+                          isCompleted 
+                            ? 'bg-emerald-500/10 text-emerald-500'
+                            : 'bg-blue-500/10 text-blue-500'
+                        }`}>
+                          {app.status}
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-450 italic font-semibold line-clamp-1">Intake: "{app.symptoms}"</p>
+                      <p className="text-[11px] text-slate-550 dark:text-slate-450 flex items-center gap-1 font-semibold">
+                        <Calendar className="w-3.5 h-3.5 text-blue-500" /> {formattedTime}
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-500 line-clamp-1 italic font-semibold">
+                        Symptom intake: "{app.symptoms}"
+                      </p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
+
+                    <ArrowRight className="w-4 h-4 text-slate-450 self-center" />
                   </div>
                 );
               })}
@@ -223,242 +222,339 @@ export default function DoctorPortal({ token }) {
           )}
         </div>
 
-        {/* Column 2: Clinical Workspace details desk (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 p-6 rounded-xl shadow-xs space-y-6">
+        {/* Selected Consultation / Action Console (7 cols) */}
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-900 p-6 rounded-2xl">
           {selectedApp ? (
-            <div className="space-y-6 animate-fade-in text-xs font-semibold leading-relaxed">
-              
-              {/* Patient Details Section */}
-              <div className="border-b border-slate-100 dark:border-slate-800 pb-4 space-y-2">
-                <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Patient details</span>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-sm font-extrabold text-slate-850 dark:text-white">{selectedApp.patient?.name}</h3>
-                    <p className="text-[10px] text-slate-500 mt-0.5">Contact: {selectedApp.patient?.email}</p>
-                  </div>
-                  <StatusBadge status={selectedApp.status} />
-                </div>
-                <p className="text-slate-700 dark:text-slate-350 leading-relaxed font-bold bg-slate-50 dark:bg-slate-950 p-3 rounded-lg border border-slate-200/50">
-                  ⚠️ Symptoms: "{selectedApp.symptoms}"
-                </p>
-              </div>
-
-              {/* AI Clinical Summary Section */}
-              <div className="border-b border-slate-100 dark:border-slate-800 pb-4 space-y-2">
-                <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Clinical summary</span>
-                <div className="border border-blue-500/10 rounded-lg p-4 bg-blue-500/5 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-extrabold text-blue-650">Pre-Visit AI Triage</span>
-                    <Badge variant={selectedApp.preVisitSummary?.status === 'SUCCESS' ? 'success' : selectedApp.preVisitSummary?.status === 'FAILED' ? 'danger' : 'warning'}>
-                      {selectedApp.preVisitSummary?.status || 'Processing'}
-                    </Badge>
-                  </div>
-
-                  {selectedApp.preVisitSummary?.status === 'SUCCESS' ? (
-                    <div className="space-y-3">
-                      <div>
-                        <span className="text-[9px] uppercase font-bold text-slate-400">Chief Complaint</span>
-                        <p className="text-slate-800 dark:text-slate-250 font-bold mt-0.5">{selectedApp.preVisitSummary.chiefComplaint}</p>
-                      </div>
-                      <div>
-                        <span className="text-[9px] uppercase font-bold text-slate-400">Suggested Questions</span>
-                        <ul className="list-disc pl-4 space-y-0.5 text-slate-655 font-medium mt-0.5">
-                          {selectedApp.preVisitSummary.suggestedQuestions?.map((q, idx) => (
-                            <li key={idx}>{q}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ) : selectedApp.preVisitSummary?.status === 'FAILED' ? (
-                    <div className="space-y-2">
-                      <p className="text-[11px] text-rose-500 font-semibold">Triage compilation failed.</p>
-                      <Button onClick={() => handleRetryPreVisit(selectedApp.id)} disabled={retrying} className="py-1 px-2.5 text-[9px]">
-                        Retry AI
-                      </Button>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 italic animate-pulse">Triage summaries processing...</p>
-                  )}
+            <div className="space-y-6">
+              {/* Patient Basic Info */}
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-550">Consultation Console</h3>
+                <div className="mt-3 p-4 bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-900 rounded-xl space-y-1">
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-350 flex items-center gap-1">
+                    <User className="w-3.5 h-3.5 text-blue-500" /> Patient: {selectedApp.patient.name}
+                  </p>
+                  <p className="text-[10px] text-slate-500 font-semibold truncate">Email: {selectedApp.patient.email}</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-350 font-bold flex items-start gap-1 pt-1.5 leading-relaxed">
+                    <Activity className="w-3.5 h-3.5 text-rose-500 mt-0.5 shrink-0" /> Symptoms: "{selectedApp.symptoms}"
+                  </p>
                 </div>
               </div>
 
-              {/* Consultation Editor Section */}
+              {/* AI Pre-visit Summary Block */}
+              <div className="border border-slate-150 dark:border-slate-850 rounded-xl p-4 bg-blue-500/5 space-y-3">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-blue-600 dark:text-cyan-400">AI Pre-Visit Summary</h4>
+                  <span className={`px-2 py-0.5 text-[8px] font-extrabold rounded ${
+                    selectedApp.preVisitSummary?.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-500' :
+                    selectedApp.preVisitSummary?.status === 'FAILED' ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'
+                  }`}>
+                    {selectedApp.preVisitSummary?.status || 'PENDING'}
+                  </span>
+                </div>
+
+                {selectedApp.preVisitSummary?.status === 'SUCCESS' ? (
+                  <div className="space-y-3 text-xs leading-relaxed">
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <span>Urgency triage:</span>
+                      <span className={`px-1.5 py-0.5 text-[9px] rounded font-extrabold ${
+                        selectedApp.preVisitSummary.urgency === 'HIGH' ? 'bg-rose-500/15 text-rose-500' :
+                        selectedApp.preVisitSummary.urgency === 'MEDIUM' ? 'bg-amber-500/15 text-amber-500' : 'bg-emerald-500/15 text-emerald-500'
+                      }`}>
+                        {selectedApp.preVisitSummary.urgency}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-bold block">Chief Complaint:</span>
+                      <p className="text-slate-650 dark:text-slate-350">{selectedApp.preVisitSummary.chiefComplaint}</p>
+                    </div>
+                    <div>
+                      <span className="font-bold block mb-1">Suggested questions for the consultation:</span>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 dark:text-slate-350 font-medium">
+                        {selectedApp.preVisitSummary.suggestedQuestions?.map((q, idx) => (
+                          <li key={idx}>{q}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="flex gap-1 items-start bg-blue-500/10 p-2 rounded text-[10px] text-blue-750 dark:text-cyan-400 font-semibold border border-blue-500/10">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <span>AI Assistance disclaimer: This triage report does not replace clinical verification. Urgency level is a guideline.</span>
+                    </div>
+                  </div>
+                ) : selectedApp.preVisitSummary?.status === 'FAILED' ? (
+                  <div className="space-y-2">
+                    <p className="text-xs text-rose-500 font-semibold">AI pre-visit summary generation failed due to a LLM provider exception.</p>
+                    <button
+                      onClick={() => handleRetryPreVisit(selectedApp.id)}
+                      disabled={retrying}
+                      className="px-3.5 py-1.5 bg-blue-500 hover:bg-blue-600 text-white font-extrabold text-[10px] rounded-lg shadow flex items-center gap-1 cursor-pointer transition-all disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${retrying ? 'animate-spin' : ''}`} />
+                      Retry AI Generation
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 italic font-semibold">Pre-visit summary is currently processing...</p>
+                )}
+              </div>
+
+              {/* Consultation Input Form (for BOOKED status) */}
               {selectedApp.status === 'BOOKED' ? (
-                <form onSubmit={handleCompleteConsultation} className="space-y-4">
-                  <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Consultation</span>
-                  
-                  <Textarea
-                    label="Clinical Notes / Diagnoses"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Enter doctor diagnoses, medical notes, observations..."
-                    required
-                  />
-
-                  {/* Prescription builder */}
-                  <div className="space-y-3 border-t border-slate-100 dark:border-slate-800 pt-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Medications</span>
-                      <button
-                        type="button"
-                        onClick={handleAddMedication}
-                        className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[9px] font-extrabold rounded border border-slate-205 transition-all cursor-pointer"
-                      >
-                        + Add Row
-                      </button>
+                <form onSubmit={handleCompleteConsultation} className="space-y-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">
+                        Clinical Notes (required)
+                      </label>
+                      <textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Enter diagnostic assessments, observations, and recommendations..."
+                        rows={5}
+                        className="w-full p-3 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-250 dark:border-slate-850 rounded-xl focus:outline-none focus:border-blue-500"
+                        required
+                      />
                     </div>
 
+                    {/* Prescription Builder */}
                     <div className="space-y-3">
-                      {prescriptionList.map((med, idx) => (
-                        <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-lg space-y-3">
-                          <div className="grid grid-cols-2 gap-2.5">
-                            <Input
-                              label="Medicine Name"
-                              value={med.medicineName}
-                              onChange={(e) => handleMedicationChange(idx, 'medicineName', e.target.value)}
-                              placeholder="e.g. Aspirin"
-                            />
-                            <Input
-                              label="Dosage Strength"
-                              value={med.dosage}
-                              onChange={(e) => handleMedicationChange(idx, 'dosage', e.target.value)}
-                              placeholder="e.g. 75mg"
-                            />
-                          </div>
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                          <Pill className="w-4 h-4 text-teal-500" /> Prescribe Medications
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleAddMedication}
+                          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-250 text-slate-700 text-[10px] font-bold rounded-lg flex items-center gap-0.5 cursor-pointer transition-all border border-slate-200 dark:border-slate-800"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Add Medicine
+                        </button>
+                      </div>
 
-                          <div className="grid grid-cols-3 gap-2">
-                            <Input
-                              label="Frequency"
-                              value={med.frequency}
-                              onChange={(e) => handleMedicationChange(idx, 'frequency', e.target.value)}
-                              placeholder="e.g. Daily"
-                            />
-                            <Input
-                              label="Duration"
-                              value={med.duration}
-                              onChange={(e) => handleMedicationChange(idx, 'duration', e.target.value)}
-                              placeholder="e.g. 30 days"
-                            />
-                            <Input
-                              label="Instructions"
-                              value={med.instructions}
-                              onChange={(e) => handleMedicationChange(idx, 'instructions', e.target.value)}
-                              placeholder="e.g. Night"
-                            />
-                          </div>
+                      <div className="space-y-3">
+                        {prescriptionList.map((med, idx) => (
+                          <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-150 dark:border-slate-850 rounded-xl space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">Medicine Name</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Paracetamol"
+                                  value={med.medicineName}
+                                  onChange={(e) => handleMedicationChange(idx, 'medicineName', e.target.value)}
+                                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-lg focus:outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">Dosage</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. 500mg"
+                                  value={med.dosage}
+                                  onChange={(e) => handleMedicationChange(idx, 'dosage', e.target.value)}
+                                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-850 rounded-lg focus:outline-none"
+                                />
+                              </div>
+                            </div>
 
-                          {prescriptionList.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveMedication(idx)}
-                              className="w-full py-1 text-[9px] font-bold bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/10 text-rose-500 rounded cursor-pointer"
-                            >
-                              Remove Row
-                            </button>
-                          )}
-                        </div>
-                      ))}
+                            <div className="grid grid-cols-3 gap-2">
+                              <div>
+                                <label className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">Frequency</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Twice daily"
+                                  value={med.frequency}
+                                  onChange={(e) => handleMedicationChange(idx, 'frequency', e.target.value)}
+                                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-850 rounded-lg focus:outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">Duration</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. 7 days"
+                                  value={med.duration}
+                                  onChange={(e) => handleMedicationChange(idx, 'duration', e.target.value)}
+                                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-850 rounded-lg focus:outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">Instructions</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. After food"
+                                  value={med.instructions}
+                                  onChange={(e) => handleMedicationChange(idx, 'instructions', e.target.value)}
+                                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-850 rounded-lg focus:outline-none"
+                                />
+                              </div>
+                            </div>
+
+                            {prescriptionList.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveMedication(idx)}
+                                className="w-full py-1 text-[10px] font-bold bg-rose-500/10 hover:bg-rose-500/25 border border-rose-500/10 text-rose-500 rounded-lg flex items-center justify-center gap-0.5 cursor-pointer transition-all"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" /> Remove Medication
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">
+                        Follow-up Information (optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={followUpInfo}
+                        onChange={(e) => setFollowUpInfo(e.target.value)}
+                        placeholder="e.g. Follow up in 1 week if symptoms persist"
+                        className="w-full p-3 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-250 dark:border-slate-850 rounded-xl focus:outline-none focus:border-blue-500"
+                      />
                     </div>
                   </div>
 
-                  <Input
-                    label="Follow-up / Recall Info"
-                    value={followUpInfo}
-                    onChange={(e) => setFollowUpInfo(e.target.value)}
-                    placeholder="e.g. Schedule review in 1 month"
-                  />
-
-                  <div className="flex gap-2 pt-2">
-                    <Button variant="secondary" onClick={() => setSelectedApp(null)} className="flex-1 py-2 border border-slate-200">
-                      Close File
-                    </Button>
-                    <Button type="submit" disabled={submitting} className="flex-1 py-2 font-extrabold">
-                      {submitting ? 'Saving notes...' : 'Complete Visit'}
-                    </Button>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedApp(null)}
+                      className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl cursor-pointer transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer transition-all"
+                    >
+                      {submitting ? 'Submitting...' : 'Complete Consultation'}
+                    </button>
                   </div>
                 </form>
               ) : (
-                /* Completed Consultation Details View */
-                <div className="space-y-4 pt-2">
-                  <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Completed Consultation Notes</span>
-                  <div className="p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-205 rounded-lg space-y-3 font-semibold text-slate-700 dark:text-slate-300">
+                // Consultation Summary and Post-visit AI summary (for COMPLETED status)
+                <div className="space-y-6">
+                  <div className="border-t border-slate-100 dark:border-slate-850 pt-4 space-y-4">
                     <div>
-                      <span className="text-[9px] font-bold text-slate-450 block uppercase tracking-wider">Clinical Notes</span>
-                      <p className="text-slate-800 dark:text-slate-200 font-medium mt-0.5">{selectedApp.consultation?.notes}</p>
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-550 mb-3">Completed Consultation Details</h3>
+                      <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-900 rounded-xl space-y-3">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Clinical Notes</span>
+                          <p className="text-xs text-slate-850 dark:text-slate-350 mt-1 font-semibold leading-relaxed">{selectedApp.consultation?.notes}</p>
+                        </div>
+                        {selectedApp.consultation?.followUpInfo && (
+                          <div>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Follow-up Instructions</span>
+                            <p className="text-xs text-slate-700 dark:text-slate-400 mt-1 font-semibold">{selectedApp.consultation.followUpInfo}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    {selectedApp.consultation?.followUpInfo && (
-                      <div>
-                        <span className="text-[9px] font-bold text-slate-450 block uppercase tracking-wider">Follow-up instructions</span>
-                        <p className="text-slate-800 dark:text-slate-200 font-medium mt-0.5">{selectedApp.consultation.followUpInfo}</p>
+
+                    {/* Persisted Prescription Table */}
+                    {selectedApp.consultation?.prescription?.items?.length > 0 && (
+                      <div className="space-y-2">
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400 block">Prescribed Medication</span>
+                        <div className="overflow-hidden border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-950/20">
+                          <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                              <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-850 text-slate-500 font-bold uppercase text-[9px] tracking-wider">
+                                <th className="p-2.5">Medicine</th>
+                                <th className="p-2.5">Dosage</th>
+                                <th className="p-2.5">Frequency</th>
+                                <th className="p-2.5">Duration</th>
+                                <th className="p-2.5">Instructions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-850 font-semibold text-slate-700 dark:text-slate-300">
+                              {selectedApp.consultation.prescription.items.map((item) => (
+                                <tr key={item.id}>
+                                  <td className="p-2.5 font-bold text-teal-650 dark:text-teal-400">{item.medicineName}</td>
+                                  <td className="p-2.5">{item.dosage}</td>
+                                  <td className="p-2.5">{item.frequency}</td>
+                                  <td className="p-2.5">{item.duration}</td>
+                                  <td className="p-2.5 text-slate-500">{item.instructions || '-'}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     )}
-                  </div>
 
-                  {selectedApp.consultation?.prescription?.items?.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Prescribed Medicine Cabinet</span>
-                      <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
-                        <table className="w-full text-left text-xs border-collapse">
-                          <thead>
-                            <tr className="bg-slate-100 border-b border-slate-200 text-slate-500 font-bold uppercase text-[9px]">
-                              <th className="p-2">Name</th>
-                              <th className="p-2">Dosage</th>
-                              <th className="p-2">Duration</th>
-                              <th className="p-2">Timing</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {selectedApp.consultation.prescription.items.map((item, idx) => (
-                              <tr key={idx} className="hover:bg-slate-50">
-                                <td className="p-2 font-extrabold text-blue-600">{item.medicineName}</td>
-                                <td className="p-2">{item.dosage}</td>
-                                <td className="p-2">{item.duration}</td>
-                                <td className="p-2 text-slate-550 font-semibold">{item.frequency}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                    {/* AI Post-visit Summary */}
+                    <div className="border border-slate-150 dark:border-slate-850 rounded-xl p-4 bg-teal-500/5 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-xs font-extrabold uppercase tracking-wider text-teal-600 dark:text-cyan-400">AI Post-Visit Summary</h4>
+                        <span className={`px-2 py-0.5 text-[8px] font-extrabold rounded ${
+                          selectedApp.consultation?.postVisitSummary?.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-500' :
+                          selectedApp.consultation?.postVisitSummary?.status === 'FAILED' ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'
+                        }`}>
+                          {selectedApp.consultation?.postVisitSummary?.status || 'PENDING'}
+                        </span>
                       </div>
+
+                      {selectedApp.consultation?.postVisitSummary?.status === 'SUCCESS' ? (
+                        <div className="space-y-4 text-xs leading-relaxed">
+                          <div>
+                            <span className="font-bold block">Patient-Friendly Summary:</span>
+                            <p className="text-slate-655 dark:text-slate-350 mt-1 font-semibold">{selectedApp.consultation.postVisitSummary.patientFriendlySummary}</p>
+                          </div>
+                          
+                          {Array.isArray(selectedApp.consultation.postVisitSummary.medicationSchedule) && selectedApp.consultation.postVisitSummary.medicationSchedule.length > 0 && (
+                            <div>
+                              <span className="font-bold block mb-1">Suggested medication schedule:</span>
+                              <div className="space-y-2">
+                                {selectedApp.consultation.postVisitSummary.medicationSchedule.map((med, idx) => (
+                                  <div key={idx} className="p-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 rounded-lg flex justify-between items-center text-[11px]">
+                                    <div>
+                                      <span className="font-bold text-teal-600 dark:text-cyan-400">{med.medicineName}</span> ({med.dosage})
+                                      <div className="text-[10px] text-slate-500 font-semibold">{med.frequency} for {med.duration}</div>
+                                    </div>
+                                    <div className="text-right text-[10px] font-bold text-blue-500">
+                                      Timing: {med.timing}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div>
+                            <span className="font-bold block">Actionable Follow-up Steps:</span>
+                            <p className="text-slate-655 dark:text-slate-350 mt-1 font-semibold">{selectedApp.consultation.postVisitSummary.followUpSteps}</p>
+                          </div>
+                        </div>
+                      ) : selectedApp.consultation?.postVisitSummary?.status === 'FAILED' ? (
+                        <div className="space-y-2">
+                          <p className="text-xs text-rose-500 font-semibold">AI post-visit summary generation failed due to a LLM provider exception.</p>
+                          <button
+                            onClick={() => handleRetryPostVisit(selectedApp.id)}
+                            disabled={retrying}
+                            className="px-3.5 py-1.5 bg-blue-500 hover:bg-blue-600 text-white font-extrabold text-[10px] rounded-lg shadow flex items-center gap-1 cursor-pointer transition-all disabled:opacity-50"
+                          >
+                            <RefreshCw className={`w-3.5 h-3.5 ${retrying ? 'animate-spin' : ''}`} />
+                            Retry AI Generation
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-400 italic font-semibold">Post-visit summary is currently processing...</p>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
             </div>
           ) : (
-            <div className="h-full py-16 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="h-full flex flex-col justify-center items-center text-center py-12 space-y-3">
               <FileText className="w-12 h-12 text-slate-350" />
-              <p className="text-xs font-bold text-slate-455">Select a patient on the left to write clinical notes, compile diagnostics, and prescribe medications.</p>
+              <p className="text-xs font-semibold text-slate-400">Select an appointment on the left to write clinical notes or view consultation timeline.</p>
             </div>
           )}
         </div>
-
-        {/* Column 3: Today's Stats Overview (3 cols) */}
-        <div className="lg:col-span-3 space-y-4">
-          <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Today's Overview</h2>
-          
-          <div className="grid grid-cols-1 gap-3.5">
-            <Card className="p-4 space-y-1 border border-slate-200">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total appointments</span>
-              <span className="text-2xl font-extrabold text-slate-800 dark:text-white mt-1 block">{totalApps}</span>
-            </Card>
-
-            <Card className="p-4 space-y-1 border border-slate-200">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Completed visits</span>
-              <span className="text-2xl font-extrabold text-emerald-600 mt-1 block">{completedApps}</span>
-            </Card>
-
-            <Card className="p-4 space-y-1 border border-slate-200">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pending notes</span>
-              <span className="text-2xl font-extrabold text-amber-500 mt-1 block">{pendingApps}</span>
-            </Card>
-
-            <Card className="p-4 space-y-1 border border-slate-200">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Cancellations</span>
-              <span className="text-2xl font-extrabold text-red-500 mt-1 block">{cancelledApps}</span>
-            </Card>
-          </div>
-        </div>
-
       </div>
     </div>
   );

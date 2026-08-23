@@ -4,7 +4,7 @@ const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'system';
+    return localStorage.getItem('theme') || 'light';
   });
 
   useEffect(() => {
@@ -17,8 +17,7 @@ export function ThemeProvider({ children }) {
 
       let activeTheme = currentTheme;
       if (currentTheme === 'system') {
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        activeTheme = systemPrefersDark ? 'dark' : 'light';
+        activeTheme = 'light';
       }
 
       root.classList.add(activeTheme);
@@ -31,13 +30,6 @@ export function ThemeProvider({ children }) {
 
     applyTheme(theme);
     localStorage.setItem('theme', theme);
-
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = () => applyTheme('system');
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
   }, [theme]);
 
   return (
