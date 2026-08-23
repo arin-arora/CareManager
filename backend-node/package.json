@@ -1,5 +1,5 @@
 {
-  "name": "medguide-backend-node",
+  "name": "caremanager-backend-node",
   "version": "1.0.0",
   "description": "Node.js + Express + TypeScript API for Healthcare Appointment Manager",
   "main": "dist/server.js",

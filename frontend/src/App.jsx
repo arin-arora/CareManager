@@ -2,14 +2,13 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import useApp from './hooks/useApp';
 import MainLayout from './layouts/MainLayout';
-import SymptomIntake from './pages/SymptomIntake';
-import Medications from './pages/Medications';
-import LabAnalyzer from './pages/LabAnalyzer';
 import AuthConsole from './pages/AuthConsole';
-import HealthConsole from './pages/HealthConsole';
-import UserHealthDashboard from './pages/UserHealthDashboard';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
+import BookingPage from './pages/BookingPage';
+import PatientAppointments from './pages/PatientAppointments';
+import DoctorPortal from './pages/DoctorPortal';
+import AdminPortal from './pages/AdminPortal';
 import VerifyEmail from './pages/VerifyEmail';
 import ResetPassword from './pages/ResetPassword';
 
@@ -24,28 +23,40 @@ export default function App() {
         setIsLogin={appState.setIsLogin}
       >
         <Routes>
-          {/* Landing Page or Dashboard Redirect */}
+          {/* Landing Page */}
           <Route 
             path="/" 
             element={appState.token ? <Navigate to="/dashboard" replace /> : <LandingPage {...appState} />} 
           />
           
-          {/* New Dashboard Route */}
+          {/* Dashboard Route */}
           <Route 
             path="/dashboard" 
             element={appState.token ? <Dashboard {...appState} /> : <Navigate to="/login" replace />} 
           />
           
-          {/* Defined App Routes */}
-          <Route path="/symptoms" element={<SymptomIntake {...appState} />} />
-          <Route path="/medications" element={<Medications {...appState} />} />
-          <Route path="/lab-reports" element={<LabAnalyzer {...appState} />} />
-          
-          {/* User health dashboard and Admin dashboard routes */}
-          <Route path="/health" element={<UserHealthDashboard {...appState} />} />
+          {/* Find Doctors & Appointment Booking */}
           <Route 
-            path="/admin/dashboard" 
-            element={appState.user?.isAdmin ? <HealthConsole {...appState} /> : <Navigate to="/symptoms" replace />} 
+            path="/booking" 
+            element={appState.token ? <BookingPage {...appState} /> : <Navigate to="/login" replace />} 
+          />
+          
+          {/* Patient Appointments History & Clinical Summaries */}
+          <Route 
+            path="/appointments" 
+            element={appState.token ? <PatientAppointments {...appState} /> : <Navigate to="/login" replace />} 
+          />
+          
+          {/* Doctor Portal (Assigned Doctor Only) */}
+          <Route 
+            path="/doctor/portal" 
+            element={appState.token && appState.user?.role === 'DOCTOR' ? <DoctorPortal {...appState} /> : <Navigate to="/dashboard" replace />} 
+          />
+          
+          {/* Admin Operations Console (Admin Only) */}
+          <Route 
+            path="/admin/portal" 
+            element={appState.token && (appState.user?.role === 'ADMIN' || appState.user?.isAdmin) ? <AdminPortal {...appState} /> : <Navigate to="/dashboard" replace />} 
           />
           
           {/* Auth routes */}
