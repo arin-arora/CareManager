@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../services/api';
 import { 
   Calendar, Clock, User, ArrowRight, ShieldCheck, 
   Stethoscope, FileText, CheckCircle, AlertCircle, Sparkles
@@ -26,7 +27,7 @@ export default function Dashboard({ user, token }) {
         const endpoint = user.role === 'DOCTOR' 
           ? '/api/appointments/doctor' 
           : '/api/appointments/patient';
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}${endpoint}`, {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.ok) {

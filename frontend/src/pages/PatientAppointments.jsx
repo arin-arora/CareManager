@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../services/api';
 import { 
   Calendar, Clock, User, Activity, FileText, 
   AlertCircle, CheckCircle, RefreshCw, AlertTriangle, Pill 
@@ -15,7 +16,7 @@ export default function PatientAppointments({ token }) {
     try {
       setLoading(true);
       setErrorMsg('');
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments/patient`, {
+      const response = await fetch(`${API_BASE_URL}/api/appointments/patient`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) {
@@ -50,7 +51,7 @@ export default function PatientAppointments({ token }) {
   const handleRetryPreVisit = async (appId) => {
     try {
       setRetrying(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments/${appId}/pre-visit-summary/retry`, {
+      const response = await fetch(`${API_BASE_URL}/api/appointments/${appId}/pre-visit-summary/retry`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -71,7 +72,7 @@ export default function PatientAppointments({ token }) {
   const handleRetryPostVisit = async (appId) => {
     try {
       setRetrying(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments/${appId}/post-visit-summary/retry`, {
+      const response = await fetch(`${API_BASE_URL}/api/appointments/${appId}/post-visit-summary/retry`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../services/api';
 import { UserPlus, Calendar, Shield, Activity, Plus, Trash2, Edit2, Check, X } from 'lucide-react';
 
 export default function AdminPortal({ token }) {
@@ -24,7 +25,7 @@ export default function AdminPortal({ token }) {
   const loadDoctors = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/admin/doctors`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/doctors`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -43,7 +44,7 @@ export default function AdminPortal({ token }) {
   // Load Leaves for selected doctor
   const loadLeaves = async (docId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/doctors/${docId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/doctors/${docId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -64,7 +65,7 @@ export default function AdminPortal({ token }) {
   const handleCreateDoctor = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/admin/doctors`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/doctors`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +94,7 @@ export default function AdminPortal({ token }) {
   // Toggle Doctor Active Status
   const handleToggleActive = async (doc) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/admin/doctors/${doc.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/doctors/${doc.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -118,7 +119,7 @@ export default function AdminPortal({ token }) {
     if (!leaveDate) return;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/admin/doctors/${selectedDoc.id}/leave`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/doctors/${selectedDoc.id}/leave`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +146,7 @@ export default function AdminPortal({ token }) {
   const handleRemoveLeave = async (dateISO) => {
     const dateOnly = dateISO.split('T')[0];
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/admin/doctors/${selectedDoc.id}/leave/${dateOnly}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/doctors/${selectedDoc.id}/leave/${dateOnly}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

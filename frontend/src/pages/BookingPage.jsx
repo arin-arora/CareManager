@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { apiService } from '../services/api';
+import { apiService, API_BASE_URL } from '../services/api';
 import { Calendar, Clock, User, Activity, AlertCircle, CheckCircle, Search, ArrowLeft, Filter, Check } from 'lucide-react';
 
 const getInitials = (name) => {
@@ -44,7 +44,7 @@ export default function BookingPage({ token, user }) {
     try {
       setLoading(true);
       const query = specQuery === 'All' ? '' : specQuery;
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/doctors?specialisation=${encodeURIComponent(query)}`, {
+      const response = await fetch(`${API_BASE_URL}/api/doctors?specialisation=${encodeURIComponent(query)}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -65,7 +65,7 @@ export default function BookingPage({ token, user }) {
     if (!selectedDoctor) return;
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/doctors/${selectedDoctor.id}/slots?date=${selectedDate}`, {
+      const response = await fetch(`${API_BASE_URL}/api/doctors/${selectedDoctor.id}/slots?date=${selectedDate}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -102,7 +102,7 @@ export default function BookingPage({ token, user }) {
     try {
       setLoading(true);
       setBookingStatus(null);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments/hold`, {
+      const response = await fetch(`${API_BASE_URL}/api/appointments/hold`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -138,7 +138,7 @@ export default function BookingPage({ token, user }) {
 
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments`, {
+      const response = await fetch(`${API_BASE_URL}/api/appointments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

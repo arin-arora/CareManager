@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../services/api';
 import { 
   Calendar, Clock, User, FileText, Activity, 
   CheckCircle, ArrowRight, Plus, Trash2, RefreshCw, AlertTriangle, Pill 
@@ -19,7 +20,7 @@ export default function DoctorPortal({ token }) {
   const loadAppointments = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments/doctor`, {
+      const response = await fetch(`${API_BASE_URL}/api/appointments/doctor`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -74,7 +75,7 @@ export default function DoctorPortal({ token }) {
 
     try {
       setSubmitting(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/doctors/appointments/${selectedApp.id}/consultation`, {
+      const response = await fetch(`${API_BASE_URL}/api/doctors/appointments/${selectedApp.id}/consultation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +112,7 @@ export default function DoctorPortal({ token }) {
   const handleRetryPreVisit = async (appId) => {
     try {
       setRetrying(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments/${appId}/pre-visit-summary/retry`, {
+      const response = await fetch(`${API_BASE_URL}/api/appointments/${appId}/pre-visit-summary/retry`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -132,7 +133,7 @@ export default function DoctorPortal({ token }) {
   const handleRetryPostVisit = async (appId) => {
     try {
       setRetrying(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/appointments/${appId}/post-visit-summary/retry`, {
+      const response = await fetch(`${API_BASE_URL}/api/appointments/${appId}/post-visit-summary/retry`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
