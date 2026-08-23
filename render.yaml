@@ -3,7 +3,7 @@ services:
     name: caremanager-backend-api
     env: node
     rootDir: backend-node
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && npx prisma generate && npm run build
     startCommand: npx prisma migrate deploy && npm run seed && npm start
     envVars:
       - key: PORT
@@ -23,6 +23,10 @@ services:
         generateValue: true
       - key: FRONTEND_URL
         value: https://care-manager-sable.vercel.app
+
+  - type: redis
+    name: caremanager-redis
+    ipAllowList: []
 
 databases:
   - name: caremanager-db
