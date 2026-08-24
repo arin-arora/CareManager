@@ -120,17 +120,20 @@ const doctorsData = [
 ];
 
 async function main() {
-  console.log('🌱 Starting CareManager database seed with doctor roster...');
+  console.log('🌱 Starting CareManager database seed with 15 doctor roster...');
 
   const validDoctorEmails = doctorsData.map(d => d.email);
 
-  // Clean up duplicate or test doctor accounts so exact doctor roster remains
+  // Purge any test doctor accounts (including dr.arin.arora.prod@caremanager.com) so EXACT 15 doctors remain
   await prisma.user.deleteMany({
     where: {
-      role: 'DOCTOR',
-      email: { 
-        notIn: validDoctorEmails 
-      }
+      OR: [
+        { email: 'dr.arin.arora.prod@caremanager.com' },
+        {
+          role: 'DOCTOR',
+          email: { notIn: validDoctorEmails }
+        }
+      ]
     }
   });
 
