@@ -32,12 +32,19 @@ const specialtyCategories = [
   'Endocrinology'
 ];
 
+const getLocalDateString = (d = new Date()) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function BookingPage({ token, user }) {
   const [doctors, setDoctors] = useState([]);
   const [specialisation, setSpecialisation] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString());
   const [slots, setSlots] = useState([]);
   const [heldSlot, setHeldSlot] = useState(null);
   const [holdTimer, setHoldTimer] = useState(0);
@@ -164,6 +171,7 @@ export default function BookingPage({ token, user }) {
         setHeldSlot(null);
         setHoldTimer(0);
         setStatusMessage(`Appointment confirmed for ${new Date(data.appointment.dateTime).toLocaleString()}!`);
+        loadSlots();
       } else {
         setBookingStatus('error');
         setStatusMessage(data.msg || 'Booking failed.');
@@ -413,7 +421,7 @@ export default function BookingPage({ token, user }) {
                     <input
                       type="date"
                       value={selectedDate}
-                      min={new Date().toISOString().split('T')[0]}
+                      min={getLocalDateString()}
                       onChange={(e) => {
                         setHeldSlot(null);
                         setHoldTimer(0);

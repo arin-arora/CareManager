@@ -60,6 +60,19 @@ export const appointmentService = {
     // Calculate end time
     const endTime = new Date(dateTime.getTime() + doctor.slotDuration * 60000);
 
+    // Check if patient already has an active appointment at this exact time
+    const existingPatientApp = await prisma.appointment.findFirst({
+      where: {
+        patientId,
+        dateTime,
+        active: true
+      }
+    });
+
+    if (existingPatientApp) {
+      throw new ConflictError('You already have another active appointment scheduled at this exact time slot.');
+    }
+
     try {
       // 3. Save Appointment + Outbox records in a transaction
       const appointment = await prisma.$transaction(async (tx) => {

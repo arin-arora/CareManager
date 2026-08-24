@@ -36,17 +36,18 @@ export const scheduleService = {
       return [];
     }
 
-    // 2. Check if date is during leave (Comparing using UTC dates)
-    const queryDate = new Date(dateStr);
-    const startOfQueryDate = new Date(Date.UTC(queryDate.getUTCFullYear(), queryDate.getUTCMonth(), queryDate.getUTCDate()));
-    const endOfQueryDate = new Date(Date.UTC(queryDate.getUTCFullYear(), queryDate.getUTCMonth(), queryDate.getUTCDate(), 23, 59, 59, 999));
+    // 2. Parse date components explicitly (YYYY-MM-DD) to prevent timezone drift
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const queryDate = new Date(Date.UTC(year, month - 1, day));
+    const startOfQueryDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+    const endOfQueryDate = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
 
     const isOnLeave = doctor.leaves.some(leave => {
       const leaveDate = new Date(leave.date);
       return (
-        leaveDate.getUTCFullYear() === queryDate.getUTCFullYear() &&
-        leaveDate.getUTCMonth() === queryDate.getUTCMonth() &&
-        leaveDate.getUTCDate() === queryDate.getUTCDate()
+        leaveDate.getUTCFullYear() === year &&
+        leaveDate.getUTCMonth() === month - 1 &&
+        leaveDate.getUTCDate() === day
       );
     });
 
@@ -79,16 +80,19 @@ export const scheduleService = {
     // Generate slots based on intervals and slot duration
     const slots: Date[] = [];
     const durationMin = doctor.slotDuration;
+    const now = new Date();
 
     for (const interval of intervals) {
       const [startHour, startMin] = interval.start.split(':').map(Number);
       const [endHour, endMin] = interval.end.split(':').map(Number);
 
-      let current = new Date(Date.UTC(queryDate.getUTCFullYear(), queryDate.getUTCMonth(), queryDate.getUTCDate(), startHour, startMin));
-      const end = new Date(Date.UTC(queryDate.getUTCFullYear(), queryDate.getUTCMonth(), queryDate.getUTCDate(), endHour, endMin));
+      let current = new Date(Date.UTC(year, month - 1, day, startHour, startMin));
+      const end = new Date(Date.UTC(year, month - 1, day, endHour, endMin));
 
       while (current.getTime() + durationMin * 60000 <= end.getTime()) {
-        slots.push(new Date(current));
+        if (current.getTime() > now.getTime()) {
+          slots.push(new Date(current));
+        }
         current = new Date(current.getTime() + durationMin * 60000);
       }
     }
