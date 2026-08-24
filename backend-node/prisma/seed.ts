@@ -20,6 +20,20 @@ const doctorsData = [
     slotDuration: 30
   },
   {
+    name: 'Dr. Gargee Singh',
+    email: 'gargee.singh@caremanager.com',
+    specialisation: 'General Medicine',
+    designation: 'Consultant',
+    slotDuration: 30
+  },
+  {
+    name: 'Dr. Nitya Mishra',
+    email: 'nitya.mishra@caremanager.com',
+    specialisation: 'Pediatrics',
+    designation: 'Senior Consultant',
+    slotDuration: 30
+  },
+  {
     name: 'Dr. Ananya Garg',
     email: 'ananya.garg@caremanager.com',
     specialisation: 'Dermatology',
@@ -106,16 +120,16 @@ const doctorsData = [
 ];
 
 async function main() {
-  console.log('🌱 Starting CareManager database seed with 13 Indian Doctor roster...');
+  console.log('🌱 Starting CareManager database seed with doctor roster...');
 
   const validDoctorEmails = doctorsData.map(d => d.email);
 
-  // Clean up legacy non-system doctor accounts if any exist
+  // Clean up duplicate or test doctor accounts so exact doctor roster remains
   await prisma.user.deleteMany({
     where: {
       role: 'DOCTOR',
       email: { 
-        notIn: [...validDoctorEmails, 'dr.arin.arora.prod@caremanager.com'] 
+        notIn: validDoctorEmails 
       }
     }
   });
