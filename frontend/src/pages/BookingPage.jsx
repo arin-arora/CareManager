@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../services/api';
 import { 
-  Calendar, Clock, User, Activity, AlertCircle, CheckCircle, 
-  Search, ArrowLeft, Filter, Sparkles, ShieldCheck, Stethoscope 
+  Calendar, Clock, User, Activity, AlertCircle, CheckCircle2, 
+  Search, ArrowLeft, Filter, Sparkles, ShieldCheck, Stethoscope, ChevronRight 
 } from 'lucide-react';
 
 const getInitials = (name) => {
@@ -196,7 +196,6 @@ export default function BookingPage({ token, user }) {
     loadDoctors(newSpec);
   };
 
-  // Client-side filtering by doctor name or specialty search query
   const filteredDoctors = doctors.filter((doc) => {
     if (!searchQuery.trim()) return true;
     const nameStr = doc.user?.name || '';
@@ -211,18 +210,19 @@ export default function BookingPage({ token, user }) {
   });
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 gap-4">
+    <div className="max-w-7xl mx-auto space-y-8 pb-16 animate-fade-in px-4 sm:px-6">
+      
+      {/* Editorial Page Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200/80 dark:border-slate-850 pb-6 gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 text-[11px] font-extrabold mb-2">
-            <Sparkles className="w-3.5 h-3.5" /> CareManager Doctor Directory
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-mono font-bold uppercase tracking-wider mb-2">
+            <Sparkles className="w-3.5 h-3.5" /> CareManager Specialist Directory
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-            Find Doctors & Book Appointments
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-slate-50">
+            Medical Practitioners
           </h1>
-          <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-1">
-            Reserve consultation slots with verified medical specialists across all healthcare departments
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
+            Browse verified healthcare specialists, check live calendar availability, and reserve consultation slots
           </p>
         </div>
 
@@ -234,20 +234,20 @@ export default function BookingPage({ token, user }) {
               setHoldTimer(0);
               setBookingStatus(null);
             }}
-            className="self-start sm:self-auto flex items-center gap-1.5 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-extrabold rounded-xl transition-all cursor-pointer shadow-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-black rounded-2xl transition-all cursor-pointer border border-slate-200 dark:border-slate-800"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Directory
+            <ArrowLeft className="w-4 h-4 text-emerald-500" /> Return to Directory
           </button>
         )}
       </div>
 
       {bookingStatus === 'success' ? (
-        <div className="bg-white dark:bg-slate-900/40 border border-emerald-500/30 rounded-3xl p-8 text-center space-y-4 shadow-md">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-500 flex items-center justify-center mx-auto shadow-inner">
-            <CheckCircle className="w-10 h-10" />
+        <div className="bg-gradient-to-br from-emerald-950/40 via-slate-950 to-slate-950 border border-emerald-500/30 rounded-3xl p-10 text-center space-y-5 shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto shadow-inner">
+            <CheckCircle2 className="w-10 h-10" />
           </div>
-          <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">Appointment Booked Successfully!</h2>
-          <p className="text-sm font-semibold text-slate-600 dark:text-slate-350 max-w-lg mx-auto">{statusMessage}</p>
+          <h2 className="text-2xl font-black text-white">Appointment Confirmed!</h2>
+          <p className="text-sm font-semibold text-slate-300 max-w-lg mx-auto leading-relaxed">{statusMessage}</p>
           <div className="pt-2">
             <button
               onClick={() => {
@@ -255,48 +255,49 @@ export default function BookingPage({ token, user }) {
                 setSelectedDoctor(null);
                 setSymptoms('');
               }}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+              className="px-7 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-2xl shadow-xl transition-all cursor-pointer"
             >
-              Book Another Appointment
+              Book Another Consultation
             </button>
           </div>
         </div>
       ) : (
         <>
           {bookingStatus === 'error' && (
-            <div className="flex gap-2.5 items-center bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-xl p-4 text-xs font-bold text-rose-600 dark:text-rose-450">
+            <div className="flex gap-3 items-center bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 rounded-2xl p-4 text-xs font-extrabold text-rose-600 dark:text-rose-400">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span>{statusMessage}</span>
             </div>
           )}
 
           {!selectedDoctor ? (
-            // Search Doctor View
+            /* Directory Search & List View */
             <div className="space-y-6">
-              {/* Search & Filter Bar */}
-              <div className="bg-white dark:bg-slate-900/40 p-5 border border-slate-200 dark:border-slate-850 rounded-3xl shadow-sm space-y-4">
+              
+              {/* Filter Controls Bar */}
+              <div className="bg-slate-50/70 dark:bg-slate-900/40 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-850 space-y-4">
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1 relative">
-                    <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                    <Search className="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
                     <input
                       type="text"
                       placeholder="Search doctor by name, designation, or specialty..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl focus:border-blue-600 focus:outline-none"
+                      className="w-full pl-11 pr-4 py-3 text-xs font-bold bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl focus:border-emerald-500 focus:outline-none"
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-extrabold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3.5 py-3 rounded-2xl shrink-0">
-                      {filteredDoctors.length} Doctors Available
+                    <span className="text-xs font-mono font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-4 py-3 rounded-2xl shrink-0 border border-emerald-500/20">
+                      {filteredDoctors.length} Practitioners
                     </span>
                   </div>
                 </div>
 
-                {/* Specialty Filter Chips */}
+                {/* Specialty Pill Selector */}
                 <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-1 scrollbar-none text-xs">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mr-1 shrink-0 flex items-center gap-1">
-                    <Filter className="w-3.5 h-3.5" /> Specialties:
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 mr-1 shrink-0 flex items-center gap-1 font-bold">
+                    <Filter className="w-3.5 h-3.5 text-emerald-500" /> Filter:
                   </span>
                   {specialtyCategories.map((spec) => {
                     const isActive = (spec === 'All' && !specialisation) || specialisation.toLowerCase() === spec.toLowerCase();
@@ -304,10 +305,10 @@ export default function BookingPage({ token, user }) {
                       <button
                         key={spec}
                         onClick={() => handleSpecialtyClick(spec)}
-                        className={`px-3.5 py-1.5 rounded-xl font-extrabold shrink-0 transition-all cursor-pointer ${
+                        className={`px-4 py-2 rounded-2xl font-black shrink-0 transition-all cursor-pointer ${
                           isActive
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                            : 'bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200/60 dark:border-slate-850'
                         }`}
                       >
                         {spec}
@@ -317,17 +318,18 @@ export default function BookingPage({ token, user }) {
                 </div>
               </div>
 
+              {/* Distinctive Asymmetric Doctor List (No Repeated Cards) */}
               {loading ? (
-                <div className="py-20 text-center text-xs font-extrabold text-slate-400 flex flex-col items-center justify-center gap-2">
-                  <Stethoscope className="w-8 h-8 animate-bounce text-blue-500" />
-                  <span>Loading verified doctor directory...</span>
+                <div className="py-20 text-center text-xs font-extrabold text-slate-400 flex flex-col items-center justify-center gap-3">
+                  <Stethoscope className="w-8 h-8 animate-bounce text-emerald-500" />
+                  <span>Loading medical practitioner index...</span>
                 </div>
               ) : filteredDoctors.length === 0 ? (
-                <div className="py-16 text-center text-xs font-semibold text-slate-500 italic bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-850 rounded-3xl p-8">
-                  No medical specialists found matching your search criteria.
+                <div className="py-16 text-center text-xs font-semibold text-slate-500 italic bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-850 rounded-3xl p-8">
+                  No medical specialists found matching your search query.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="divide-y divide-slate-200/60 dark:divide-slate-850 border-y border-slate-200/80 dark:border-slate-850">
                   {filteredDoctors.map((doc) => {
                     const rawName = doc.user?.name || 'Doctor';
                     const docName = rawName.startsWith('Dr.') ? rawName : `Dr. ${rawName}`;
@@ -337,57 +339,42 @@ export default function BookingPage({ token, user }) {
                     return (
                       <div
                         key={doc.id}
-                        className="border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/30 p-6 rounded-3xl hover:border-blue-500/50 hover:-translate-y-0.5 transition-all duration-200 space-y-5 shadow-sm flex flex-col justify-between group"
+                        className="py-5 px-3 sm:px-5 hover:bg-slate-50/80 dark:hover:bg-slate-900/30 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
                       >
-                        <div className="space-y-4">
-                          {/* Doctor Avatar Header */}
-                          <div className="flex items-start gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-extrabold text-lg flex items-center justify-center shrink-0 border border-blue-500/20 shadow-inner group-hover:scale-105 transition-transform">
-                              {initials}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {/* Doctor Monogram & Info */}
+                        <div className="flex items-center gap-4 min-w-0">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600/20 via-teal-600/20 to-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-black text-lg flex items-center justify-center shrink-0 border border-emerald-500/20 group-hover:scale-105 transition-transform shadow-inner">
+                            {initials}
+                          </div>
+                          <div className="space-y-1 truncate">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-base font-black text-slate-900 dark:text-slate-50 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                                 {docName}
                               </h3>
-                              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                                {designation}
-                              </p>
-                              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400 text-[10px] font-extrabold mt-1.5">
-                                <Stethoscope className="w-3 h-3" /> {doc.specialisation}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Verification & Status Badges */}
-                          <div className="pt-3 border-t border-slate-100 dark:border-slate-850 space-y-2">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                                <ShieldCheck className="w-3.5 h-3.5" /> Verified Practitioner
-                              </span>
-                              <span className="text-[11px] font-medium text-slate-400">
-                                {doc.slotDuration || 30} min slots
+                              <span className="inline-flex items-center gap-1 text-[10px] font-mono font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+                                <ShieldCheck className="w-3 h-3" /> Verified
                               </span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 px-3 py-1 rounded-xl">
-                              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                              Available for online booking
-                            </div>
+                            <p className="text-xs font-extrabold text-slate-500 dark:text-slate-400">
+                              {designation} • <span className="text-emerald-600 dark:text-emerald-400">{doc.specialisation}</span>
+                            </p>
                           </div>
                         </div>
 
-                        {/* Action buttons */}
-                        <div className="grid grid-cols-2 gap-2 pt-2">
+                        {/* Availability Tag & Action Button */}
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end shrink-0 pt-2 sm:pt-0">
+                          <div className="text-right hidden sm:block">
+                            <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 block flex items-center gap-1.5 justify-end">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Available Today
+                            </span>
+                            <span className="text-[10px] font-semibold text-slate-400">{doc.slotDuration || 30} min slots</span>
+                          </div>
+
                           <button
                             onClick={() => setSelectedDoctor(doc)}
-                            className="w-full py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-extrabold text-xs rounded-2xl transition-all cursor-pointer text-center"
+                            className="px-6 py-3 bg-slate-900 dark:bg-emerald-600 hover:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-black text-xs rounded-2xl shadow-md transition-all cursor-pointer flex items-center gap-2 group-hover:shadow-emerald-600/20"
                           >
-                            View Profile
-                          </button>
-                          <button
-                            onClick={() => setSelectedDoctor(doc)}
-                            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-2xl shadow-sm cursor-pointer transition-all text-center"
-                          >
-                            Book Slot
+                            Select & Book <ChevronRight className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
@@ -397,27 +384,33 @@ export default function BookingPage({ token, user }) {
               )}
             </div>
           ) : (
-            // Availability and Booking View
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Slots Column */}
-              <div className="lg:col-span-7 space-y-5 bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-850 p-6 rounded-3xl shadow-sm">
-                <div className="flex items-center gap-4 border-b border-slate-100 dark:border-slate-850 pb-4">
-                  <div className="w-14 h-14 rounded-2xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-extrabold text-lg flex items-center justify-center shrink-0 border border-blue-500/20 shadow-inner">
+            /* Dedicated Booking Workflow Pane */
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              {/* Doctor Details & Date Selector (7 cols) */}
+              <div className="lg:col-span-7 space-y-6 bg-slate-50/60 dark:bg-slate-900/30 border border-slate-200/80 dark:border-slate-850 p-6 sm:p-7 rounded-3xl">
+                
+                {/* Doctor Banner Strip */}
+                <div className="flex items-center gap-4 border-b border-slate-200/80 dark:border-slate-850 pb-5">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600/20 to-teal-500/20 text-emerald-600 dark:text-emerald-400 font-black text-xl flex items-center justify-center shrink-0 border border-emerald-500/30 shadow-inner">
                     {getInitials(selectedDoctor.user?.name)}
                   </div>
                   <div>
-                    <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
+                    <h3 className="text-xl font-black text-slate-900 dark:text-slate-50">
                       {selectedDoctor.user?.name?.startsWith('Dr.') ? selectedDoctor.user.name : `Dr. ${selectedDoctor.user?.name}`}
                     </h3>
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
-                      {selectedDoctor.designation || 'Consultant'} • <span className="text-blue-600 dark:text-blue-400 font-bold">{selectedDoctor.specialisation}</span>
+                    <p className="text-xs font-extrabold text-slate-500 dark:text-slate-400 mt-0.5">
+                      {selectedDoctor.designation || 'Consultant'} • <span className="text-emerald-600 dark:text-emerald-400 font-black">{selectedDoctor.specialisation}</span>
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-4 pt-1">
+                {/* Interactive Date Timeline Picker */}
+                <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1">Select Consultation Date</label>
+                    <label className="text-xs font-mono uppercase tracking-widest font-extrabold text-slate-400 block mb-2">
+                      1. Select Consultation Date
+                    </label>
                     <input
                       type="date"
                       value={selectedDate}
@@ -427,19 +420,20 @@ export default function BookingPage({ token, user }) {
                         setHoldTimer(0);
                         setSelectedDate(e.target.value);
                       }}
-                      className="w-full px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none font-bold text-slate-800 dark:text-slate-200"
+                      className="w-full px-4 py-3 text-xs font-black bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl focus:outline-none text-slate-900 dark:text-slate-100"
                     />
                   </div>
 
-                  <div className="space-y-3">
-                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block">
-                      Available Time Slots
+                  {/* Slot Selection Grid */}
+                  <div className="space-y-3 pt-2">
+                    <label className="text-xs font-mono uppercase tracking-widest font-extrabold text-slate-400 block">
+                      2. Available Time Slots ({slots.length})
                     </label>
 
                     {loading ? (
-                      <div className="py-10 text-center text-xs font-semibold text-slate-400">Loading available slots...</div>
+                      <div className="py-10 text-center text-xs font-bold text-slate-400">Loading slots for {selectedDate}...</div>
                     ) : slots.length === 0 ? (
-                      <div className="py-10 text-center text-xs font-semibold text-slate-400 italic bg-slate-50 dark:bg-slate-950/40 rounded-2xl">
+                      <div className="py-10 text-center text-xs font-semibold text-slate-400 italic bg-white dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-850">
                         No available consultation slots on this date.
                       </div>
                     ) : (
@@ -454,10 +448,10 @@ export default function BookingPage({ token, user }) {
                               key={slotStr}
                               onClick={() => handleHoldSlot(slotStr)}
                               disabled={heldSlot && !isHeld}
-                              className={`p-3 text-xs font-extrabold rounded-2xl border text-center transition-all cursor-pointer ${
+                              className={`p-3 text-xs font-black rounded-2xl border text-center transition-all cursor-pointer ${
                                 isHeld
-                                  ? 'bg-blue-600 text-white border-transparent shadow-md'
-                                  : 'bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-850 hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                                  ? 'bg-emerald-600 text-white border-transparent shadow-lg shadow-emerald-600/20'
+                                  : 'bg-white dark:bg-slate-950 border-slate-200/80 dark:border-slate-850 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-slate-800 dark:text-slate-200 disabled:opacity-50'
                               }`}
                             >
                               <Clock className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
@@ -471,62 +465,62 @@ export default function BookingPage({ token, user }) {
                 </div>
               </div>
 
-              {/* Booking Form Column */}
-              <div className="lg:col-span-5 bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-850 p-6 rounded-3xl flex flex-col justify-between shadow-sm">
+              {/* Booking Confirmation Side Drawer (5 cols) */}
+              <div className="lg:col-span-5 bg-gradient-to-b from-slate-900 to-slate-950 text-white border border-slate-800 p-6 sm:p-7 rounded-3xl space-y-6 shadow-xl">
                 <div>
-                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-4">
-                    Confirm Appointment Details
-                  </h3>
-                  <div className="border border-slate-200 dark:border-slate-800 p-4 rounded-2xl space-y-2 mb-4 bg-slate-50/50 dark:bg-slate-950/30">
-                    <p className="text-xs font-extrabold text-slate-800 dark:text-slate-200">
-                      Doctor: <span className="text-blue-600 dark:text-blue-400">{selectedDoctor.user?.name?.startsWith('Dr.') ? selectedDoctor.user.name : `Dr. ${selectedDoctor.user?.name}`}</span>
+                  <span className="text-[10px] font-mono uppercase tracking-widest font-black text-emerald-400 block mb-3">
+                    3. Confirm Booking
+                  </span>
+                  
+                  <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl space-y-2.5">
+                    <p className="text-xs font-bold text-slate-300">
+                      Practitioner: <span className="text-white font-black">{selectedDoctor.user?.name?.startsWith('Dr.') ? selectedDoctor.user.name : `Dr. ${selectedDoctor.user?.name}`}</span>
                     </p>
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Designation: <span className="text-slate-600 dark:text-slate-400">{selectedDoctor.designation || 'Consultant'}</span>
+                    <p className="text-xs font-bold text-slate-300">
+                      Specialty: <span className="text-emerald-400 font-extrabold">{selectedDoctor.specialisation}</span>
                     </p>
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Specialty: <span className="text-slate-600 dark:text-slate-400">{selectedDoctor.specialisation}</span>
-                    </p>
+                    
                     {heldSlot ? (
-                      <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 p-3.5 rounded-xl mt-3">
-                        <p className="text-xs font-bold text-blue-700 dark:text-blue-400">
+                      <div className="bg-emerald-950/40 border border-emerald-500/30 p-3.5 rounded-xl mt-3 space-y-1">
+                        <p className="text-xs font-black text-emerald-400">
                           Selected Slot: {new Date(heldSlot).toLocaleString()}
                         </p>
-                        <p className="text-[11px] font-extrabold text-rose-500 mt-1">
+                        <p className="text-[11px] font-extrabold text-rose-400">
                           Slot held for: {formatTimer(holdTimer)}
                         </p>
                       </div>
                     ) : (
-                      <p className="text-xs font-semibold text-slate-400 italic pt-1">Please select an available time slot on the left to lock it.</p>
+                      <p className="text-xs font-semibold text-slate-400 italic pt-1">Please select an available time slot on the left to hold it.</p>
                     )}
                   </div>
                 </div>
 
                 {heldSlot && (
-                  <form onSubmit={handleBookAppointment} className="space-y-4 pt-2">
+                  <form onSubmit={handleBookAppointment} className="space-y-4">
                     <div>
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1 mb-1.5">
-                        <Activity className="w-3.5 h-3.5 text-rose-500" /> Share symptoms in advance (required)
+                      <label className="text-xs font-black text-slate-300 flex items-center gap-1.5 mb-2">
+                        <Activity className="w-3.5 h-3.5 text-emerald-400" /> Share symptoms in advance (required)
                       </label>
                       <textarea
                         value={symptoms}
                         onChange={(e) => setSymptoms(e.target.value)}
-                        placeholder="Describe main symptoms, duration, severity..."
-                        rows={3}
-                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl focus:border-blue-600 focus:outline-none"
+                        placeholder="Describe your primary symptoms, duration, severity..."
+                        rows={4}
+                        className="w-full px-4 py-3 text-xs font-bold bg-slate-950 border border-slate-800 rounded-2xl focus:border-emerald-500 focus:outline-none text-white"
                         required
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-2xl shadow-md cursor-pointer transition-all disabled:opacity-50"
+                      className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-2xl shadow-xl transition-all cursor-pointer disabled:opacity-50"
                     >
                       {loading ? 'Processing...' : 'Confirm & Book Appointment'}
                     </button>
                   </form>
                 )}
               </div>
+
             </div>
           )}
         </>
