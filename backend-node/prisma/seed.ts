@@ -27,10 +27,10 @@ const doctorsData = [
     slotDuration: 30
   },
   {
-    name: 'Dr. Kalash Suneja',
-    email: 'kalash.suneja@caremanager.com',
-    specialisation: 'Neurology',
-    designation: 'Senior Consultant',
+    name: 'Dr. Prisha',
+    email: 'prisha@caremanager.com',
+    specialisation: 'General Medicine',
+    designation: 'Consultant',
     slotDuration: 30
   },
   {
@@ -41,17 +41,31 @@ const doctorsData = [
     slotDuration: 30
   },
   {
-    name: 'Dr. Ananya Sharma',
-    email: 'ananya.sharma@caremanager.com',
-    specialisation: 'Gynecology',
+    name: 'Dr. Rohit Sharma',
+    email: 'rohit.sharma@caremanager.com',
+    specialisation: 'ENT',
     designation: 'Senior Consultant',
     slotDuration: 30
   },
   {
-    name: 'Dr. Prisha',
-    email: 'prisha@caremanager.com',
-    specialisation: 'General Medicine',
+    name: 'Dr. Manas Malhotra',
+    email: 'manas.malhotra@caremanager.com',
+    specialisation: 'Ophthalmology',
     designation: 'Consultant',
+    slotDuration: 30
+  },
+  {
+    name: 'Dr. Kalash Suneja',
+    email: 'kalash.suneja@caremanager.com',
+    specialisation: 'Neurology',
+    designation: 'Senior Consultant',
+    slotDuration: 30
+  },
+  {
+    name: 'Dr. Ananya Sharma',
+    email: 'ananya.sharma@caremanager.com',
+    specialisation: 'Gynecology',
+    designation: 'Senior Consultant',
     slotDuration: 30
   },
   {
@@ -83,31 +97,26 @@ const doctorsData = [
     slotDuration: 30
   },
   {
-    name: 'Dr. Devansh Kapoor',
-    email: 'devansh.kapoor@caremanager.com',
-    specialisation: 'Cardiology',
+    name: 'Dr. Kavya Sen',
+    email: 'kavya.sen@caremanager.com',
+    specialisation: 'Psychiatry',
     designation: 'Senior Consultant',
-    slotDuration: 30
-  },
-  {
-    name: 'Dr. Aryan Bansal',
-    email: 'aryan.bansal@caremanager.com',
-    specialisation: 'General Medicine',
-    designation: 'Specialist',
     slotDuration: 30
   }
 ];
 
 async function main() {
-  console.log('🌱 Starting CareManager database seed with Indian Doctor roster...');
+  console.log('🌱 Starting CareManager database seed with 13 Indian Doctor roster...');
 
   const validDoctorEmails = doctorsData.map(d => d.email);
 
-  // Clean up all legacy / non-Indian doctor accounts
+  // Clean up legacy non-system doctor accounts if any exist
   await prisma.user.deleteMany({
     where: {
       role: 'DOCTOR',
-      email: { notIn: validDoctorEmails }
+      email: { 
+        notIn: [...validDoctorEmails, 'dr.arin.arora.prod@caremanager.com'] 
+      }
     }
   });
 
